@@ -17,10 +17,16 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
+    "customEditors": [
       {
-        "command": "markdown-live-editor.helloWorld",
-        "title": "Hello World"
+        "viewType": "markdownLiveEditor.editor",
+        "displayName": "Markdown Live Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          }
+        ],
+        "priority": "option"
       }
     ]
   },
@@ -39,15 +45,23 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.109.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.54.0",
-    "eslint": "^9.39.2",
+    "@types/vscode": "^1.109.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.54.0"
+  },
+  "dependencies": {
+    "@milkdown/core": "^7.18.0",
+    "@milkdown/ctx": "^7.18.0",
+    "@milkdown/plugin-listener": "^7.18.0",
+    "@milkdown/preset-commonmark": "^7.18.0",
+    "@milkdown/preset-gfm": "^7.18.0",
+    "@milkdown/prose": "^7.18.0"
   }
 }

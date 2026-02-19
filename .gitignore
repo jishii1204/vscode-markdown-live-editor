@@ -1,5 +1,7 @@
 node_modules/
 dist/
+media/
 out/
 *.vsix
 .vscode-test/
+.DS_Store

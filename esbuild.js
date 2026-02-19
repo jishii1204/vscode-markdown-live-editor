@@ -1,4 +1,6 @@
 const esbuild = require("esbuild");
+const path = require("path");
+const fs = require("fs");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -23,11 +25,26 @@ const esbuildProblemMatcherPlugin = {
 	},
 };
 
+/**
+ * Plugin to copy style.css to media/ after build
+ * @type {import('esbuild').Plugin}
+ */
+const copyStylePlugin = {
+	name: 'copy-style',
+	setup(build) {
+		build.onEnd(() => {
+			const src = path.resolve(__dirname, 'src/view/style.css');
+			const dest = path.resolve(__dirname, 'media/style.css');
+			fs.mkdirSync(path.dirname(dest), { recursive: true });
+			fs.copyFileSync(src, dest);
+		});
+	},
+};
+
 async function main() {
-	const ctx = await esbuild.context({
-		entryPoints: [
-			'src/extension.ts'
-		],
+	// Extension Host bundle (Node.js)
+	const extCtx = await esbuild.context({
+		entryPoints: ['src/extension.ts'],
 		bundle: true,
 		format: 'cjs',
 		minify: production,
@@ -37,16 +54,28 @@ async function main() {
 		outfile: 'dist/extension.js',
 		external: ['vscode'],
 		logLevel: 'silent',
-		plugins: [
-			/* add to the end of plugins array */
-			esbuildProblemMatcherPlugin,
-		],
+		plugins: [esbuildProblemMatcherPlugin],
 	});
+
+	// Webview bundle (browser)
+	const viewCtx = await esbuild.context({
+		entryPoints: ['src/view/view.ts'],
+		bundle: true,
+		format: 'iife',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'browser',
+		outfile: 'media/view.js',
+		logLevel: 'silent',
+		plugins: [esbuildProblemMatcherPlugin, copyStylePlugin],
+	});
+
 	if (watch) {
-		await ctx.watch();
+		await Promise.all([extCtx.watch(), viewCtx.watch()]);
 	} else {
-		await ctx.rebuild();
-		await ctx.dispose();
+		await Promise.all([extCtx.rebuild(), viewCtx.rebuild()]);
+		await Promise.all([extCtx.dispose(), viewCtx.dispose()]);
 	}
 }
 
