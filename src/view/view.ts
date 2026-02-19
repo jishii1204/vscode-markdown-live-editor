@@ -1,5 +1,5 @@
 import { Editor } from '@milkdown/core';
-import { defaultValueCtx, rootCtx, editorViewCtx, serializerCtx, editorStateCtx } from '@milkdown/core';
+import { defaultValueCtx, rootCtx, editorViewCtx, serializerCtx, editorStateCtx, parserCtx } from '@milkdown/core';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
@@ -51,27 +51,16 @@ function replaceContent(newMarkdown: string): void {
 			const currentMarkdown = serializer(ctx.get(editorStateCtx).doc);
 
 			if (currentMarkdown === newMarkdown) {
+				isUpdatingFromExtension = false;
 				return;
 			}
 
-			// Use the parser to convert markdown to a ProseMirror document
-			// then replace the entire content
-			const { state } = view;
-			const { tr } = state;
-			tr.replaceWith(0, state.doc.content.size, []);
+			const parser = ctx.get(parserCtx);
+			const newDoc = parser(newMarkdown);
+			const { tr } = view.state;
+			tr.replaceWith(0, view.state.doc.content.size, newDoc.content);
 			view.dispatch(tr);
-
-			// Re-create editor with new content to ensure proper parsing
-			const container = document.getElementById('editor');
-			if (container) {
-				editor?.destroy();
-				editor = null;
-				isUpdatingFromExtension = true;
-				createEditor(container, newMarkdown).then((e) => {
-					editor = e;
-					isUpdatingFromExtension = false;
-				});
-			}
+			isUpdatingFromExtension = false;
 		});
 	} catch {
 		isUpdatingFromExtension = false;

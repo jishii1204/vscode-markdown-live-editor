@@ -1,83 +1,109 @@
+/*
+ * Based on VS Code built-in Markdown preview stylesheet
+ * (markdown-language-features/media/markdown.css)
+ */
+
+html, body {
+	font-family: var(--markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
 body {
-	margin: 0;
-	padding: 16px;
-	background: var(--vscode-editor-background);
-	color: var(--vscode-editor-foreground);
-	font-family: var(--vscode-font-family);
-	font-size: var(--vscode-font-size);
+	padding-top: 1em;
 }
 
 #editor {
-	max-width: 800px;
-	margin: 0 auto;
+	max-width: 100%;
 }
 
-/* ProseMirror base styles */
+/* ProseMirror base */
 .ProseMirror {
 	outline: none;
 	min-height: 100vh;
-	line-height: 1.6;
 }
 
+/* Reset margin top */
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6,
+.ProseMirror p,
+.ProseMirror ol,
+.ProseMirror ul,
+.ProseMirror pre {
+	margin-top: 0;
+}
+
+/* Headings */
 .ProseMirror h1,
 .ProseMirror h2,
 .ProseMirror h3,
 .ProseMirror h4,
 .ProseMirror h5,
 .ProseMirror h6 {
-	margin-top: 1em;
-	margin-bottom: 0.5em;
 	font-weight: 600;
+	margin-top: 24px;
+	margin-bottom: 16px;
+	line-height: 1.25;
 }
 
-.ProseMirror h1 { font-size: 2em; }
-.ProseMirror h2 { font-size: 1.5em; }
+.ProseMirror h1 {
+	font-size: 2em;
+	margin-top: 0;
+	padding-bottom: 0.3em;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-color: rgba(128, 128, 128, 0.18);
+}
+
+.ProseMirror h2 {
+	font-size: 1.5em;
+	padding-bottom: 0.3em;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-color: rgba(128, 128, 128, 0.18);
+}
+
 .ProseMirror h3 { font-size: 1.25em; }
+.ProseMirror h4 { font-size: 1em; }
+.ProseMirror h5 { font-size: 0.875em; }
+.ProseMirror h6 { font-size: 0.85em; }
 
+/* Paragraphs */
 .ProseMirror p {
-	margin: 0.5em 0;
+	margin-bottom: 16px;
 }
 
+.ProseMirror li p {
+	margin-bottom: 0.7em;
+}
+
+/* Lists */
 .ProseMirror ul,
 .ProseMirror ol {
-	padding-left: 1.5em;
+	margin-bottom: 0.7em;
 }
 
-.ProseMirror blockquote {
-	border-left: 3px solid var(--vscode-textBlockQuote-border, #007acc);
-	margin: 0.5em 0;
-	padding: 0.25em 1em;
-	color: var(--vscode-textBlockQuote-foreground, inherit);
+.ProseMirror ul ul:first-child,
+.ProseMirror ul ol:first-child,
+.ProseMirror ol ul:first-child,
+.ProseMirror ol ol:first-child {
+	margin-bottom: 0;
 }
 
-.ProseMirror code {
-	font-family: var(--vscode-editor-font-family, monospace);
-	background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.15));
-	padding: 0.1em 0.3em;
-	border-radius: 3px;
-	font-size: 0.9em;
+/* Images */
+.ProseMirror img {
+	max-width: 100%;
+	max-height: 100%;
 }
 
-.ProseMirror pre {
-	background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.15));
-	padding: 1em;
-	border-radius: 4px;
-	overflow-x: auto;
-}
-
-.ProseMirror pre code {
-	background: none;
-	padding: 0;
-}
-
-.ProseMirror hr {
-	border: none;
-	border-top: 1px solid var(--vscode-editorWidget-border, #444);
-	margin: 1em 0;
-}
-
+/* Links */
 .ProseMirror a {
-	color: var(--vscode-textLink-foreground, #007acc);
 	text-decoration: none;
 }
 
@@ -85,38 +111,108 @@ body {
 	text-decoration: underline;
 }
 
-.ProseMirror img {
-	max-width: 100%;
+/* Horizontal rule */
+.ProseMirror hr {
+	border: 0;
+	height: 1px;
+	border-bottom: 1px solid;
+	border-bottom-color: rgba(128, 128, 128, 0.18);
 }
 
+/* Blockquote */
+.ProseMirror blockquote {
+	margin: 0;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+	border-radius: 2px;
+}
+
+/* Inline code */
+.ProseMirror code {
+	font-family: var(--vscode-editor-font-family, "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace);
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+/* Code block */
+.ProseMirror pre {
+	background-color: var(--vscode-textCodeBlock-background);
+	border: 1px solid var(--vscode-widget-border);
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+.ProseMirror pre code {
+	display: inline-block;
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+	background: none;
+}
+
+/* Strong */
 .ProseMirror strong {
-	font-weight: 700;
+	font-weight: 600;
 }
 
-/* GFM table styles */
+/* Table */
 .ProseMirror table {
 	border-collapse: collapse;
-	width: 100%;
-	margin: 0.5em 0;
+	margin-bottom: 0.7em;
+}
+
+.ProseMirror th {
+	text-align: left;
+	border-bottom: 1px solid;
 }
 
 .ProseMirror th,
 .ProseMirror td {
-	border: 1px solid var(--vscode-editorWidget-border, #444);
-	padding: 0.4em 0.8em;
-	text-align: left;
+	padding: 5px 10px;
 }
 
+.ProseMirror table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+/* Theme-aware border colors */
 .ProseMirror th {
-	background: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.1));
-	font-weight: 600;
+	border-color: rgba(128, 128, 128, 0.69);
+}
+
+.ProseMirror td {
+	border-color: rgba(128, 128, 128, 0.18);
 }
 
 /* GFM task list */
 .ProseMirror li[data-checked] {
 	list-style: none;
+	position: relative;
 	margin-left: -1.5em;
 	padding-left: 1.5em;
+}
+
+.ProseMirror li[data-checked]::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0.25em;
+	width: 1em;
+	height: 1em;
+	border: 1px solid rgba(128, 128, 128, 0.69);
+	border-radius: 3px;
+	background: transparent;
+}
+
+.ProseMirror li[data-checked="true"]::before {
+	background: var(--vscode-textLink-foreground, #007acc);
+	border-color: var(--vscode-textLink-foreground, #007acc);
+}
+
+.ProseMirror li[data-checked="true"] {
+	opacity: 0.6;
+	text-decoration: line-through;
 }
 
 /* GFM strikethrough */
