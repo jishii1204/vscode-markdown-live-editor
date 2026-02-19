@@ -3,8 +3,19 @@
  * (markdown-language-features/media/markdown.css)
  */
 
-html, body {
-	font-family: var(--markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif);
+html,
+body {
+	font-family: var(
+		--markdown-font-family,
+		-apple-system,
+		BlinkMacSystemFont,
+		"Segoe WPC",
+		"Segoe UI",
+		system-ui,
+		"Ubuntu",
+		"Droid Sans",
+		sans-serif
+	);
 	font-size: var(--markdown-font-size, 14px);
 	padding: 0 26px;
 	line-height: var(--markdown-line-height, 22px);
@@ -69,10 +80,18 @@ body {
 	border-bottom-color: rgba(128, 128, 128, 0.18);
 }
 
-.ProseMirror h3 { font-size: 1.25em; }
-.ProseMirror h4 { font-size: 1em; }
-.ProseMirror h5 { font-size: 0.875em; }
-.ProseMirror h6 { font-size: 0.85em; }
+.ProseMirror h3 {
+	font-size: 1.25em;
+}
+.ProseMirror h4 {
+	font-size: 1em;
+}
+.ProseMirror h5 {
+	font-size: 0.875em;
+}
+.ProseMirror h6 {
+	font-size: 0.85em;
+}
 
 /* Paragraphs */
 .ProseMirror p {
@@ -130,7 +149,18 @@ body {
 
 /* Inline code */
 .ProseMirror code {
-	font-family: var(--vscode-editor-font-family, "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace);
+	font-family: var(
+		--vscode-editor-font-family,
+		"SF Mono",
+		Monaco,
+		Menlo,
+		Consolas,
+		"Ubuntu Mono",
+		"Liberation Mono",
+		"DejaVu Sans Mono",
+		"Courier New",
+		monospace
+	);
 	font-size: 1em;
 	line-height: 1.357em;
 }

@@ -1,8 +1,15 @@
-import { Editor } from '@milkdown/core';
-import { defaultValueCtx, rootCtx, editorViewCtx, serializerCtx, editorStateCtx, parserCtx } from '@milkdown/core';
+import {
+	defaultValueCtx,
+	Editor,
+	editorStateCtx,
+	editorViewCtx,
+	parserCtx,
+	rootCtx,
+	serializerCtx,
+} from '@milkdown/core';
+import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
-import { listener, listenerCtx } from '@milkdown/plugin-listener';
 
 declare function acquireVsCodeApi(): {
 	postMessage(message: unknown): void;
@@ -15,20 +22,44 @@ const vscode = acquireVsCodeApi();
 let editor: Editor | null = null;
 let isUpdatingFromExtension = false;
 
-async function createEditor(container: HTMLElement, markdown: string): Promise<Editor> {
+// We compare against the normalized baseline to detect real user changes.
+// This prevents the file from being dirtied just by opening it in the editor.
+let normalizedBaseline = '';
+let isInitializing = false;
+
+async function createEditor(
+	container: HTMLElement,
+	markdown: string,
+): Promise<Editor> {
+	isInitializing = true;
+
 	const instance = Editor.make()
 		.config((ctx) => {
 			ctx.set(rootCtx, container);
 			ctx.set(defaultValueCtx, markdown);
 
 			ctx.get(listenerCtx).markdownUpdated((_ctx, md, prevMd) => {
+				// During initialization, capture the normalized baseline
+				// but don't send any update to the extension host
+				if (isInitializing) {
+					normalizedBaseline = md;
+					return;
+				}
+
 				if (isUpdatingFromExtension) {
 					return;
 				}
 				if (md === prevMd) {
 					return;
 				}
+
+				// Only send if the content actually changed from baseline
+				if (md === normalizedBaseline) {
+					return;
+				}
+
 				vscode.postMessage({ type: 'update', body: md });
+				normalizedBaseline = md;
 			});
 		})
 		.use(commonmark)
@@ -36,6 +67,14 @@ async function createEditor(container: HTMLElement, markdown: string): Promise<E
 		.use(listener);
 
 	await instance.create();
+
+	// Capture the normalized baseline after editor is fully initialized
+	instance.action((ctx) => {
+		const serializer = ctx.get(serializerCtx);
+		normalizedBaseline = serializer(ctx.get(editorStateCtx).doc);
+	});
+
+	isInitializing = false;
 	return instance;
 }
 
@@ -60,6 +99,9 @@ function replaceContent(newMarkdown: string): void {
 			const { tr } = view.state;
 			tr.replaceWith(0, view.state.doc.content.size, newDoc.content);
 			view.dispatch(tr);
+
+			// Update baseline to the new normalized content
+			normalizedBaseline = serializer(ctx.get(editorStateCtx).doc);
 			isUpdatingFromExtension = false;
 		});
 	} catch {

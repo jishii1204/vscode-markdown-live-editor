@@ -1,6 +1,6 @@
-const esbuild = require("esbuild");
-const path = require("path");
-const fs = require("fs");
+const esbuild = require('esbuild');
+const path = require('node:path');
+const fs = require('node:fs');
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -18,7 +18,9 @@ const esbuildProblemMatcherPlugin = {
 		build.onEnd((result) => {
 			result.errors.forEach(({ text, location }) => {
 				console.error(`✘ [ERROR] ${text}`);
-				console.error(`    ${location.file}:${location.line}:${location.column}:`);
+				console.error(
+					`    ${location.file}:${location.line}:${location.column}:`,
+				);
 			});
 			console.log('[watch] build finished');
 		});
@@ -79,7 +81,7 @@ async function main() {
 	}
 }
 
-main().catch(e => {
+main().catch((e) => {
 	console.error(e);
 	process.exit(1);
 });
