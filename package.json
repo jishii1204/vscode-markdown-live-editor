@@ -83,7 +83,7 @@
     "lint:fix": "biome check --write src/ esbuild.js"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.2",
+    "@biomejs/biome": "2.4.3",
     "@types/katex": "^0.16.8",
     "@types/node": "25.x",
     "@types/vscode": "^1.109.0",
