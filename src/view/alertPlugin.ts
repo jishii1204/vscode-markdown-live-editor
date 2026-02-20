@@ -53,7 +53,10 @@ export const alertPlugin = $prose(() => {
 						Decoration.widget(pos + 1, () => {
 							const banner = document.createElement('div');
 							banner.className = `markdown-alert-title markdown-alert-title-${alertType}`;
-							banner.innerHTML = `${icon}<span>${title}</span>`;
+							banner.innerHTML = icon;
+							const span = document.createElement('span');
+							span.textContent = title;
+							banner.appendChild(span);
 							return banner;
 						}),
 					);

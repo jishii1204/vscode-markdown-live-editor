@@ -29,12 +29,13 @@ function applyHighlight(codeEl: HTMLElement, language: string): void {
 	loadHljs().then(() => {
 		if (!hljsModule) return;
 		const hljs = hljsModule.default;
-		// Remove previous highlighting
-		codeEl.classList.forEach((cls) => {
-			if (cls.startsWith('hljs') || cls.startsWith('language-')) {
-				codeEl.classList.remove(cls);
-			}
-		});
+		// Remove previous highlighting (collect first to avoid mutating during iteration)
+		const toRemove = Array.from(codeEl.classList).filter(
+			(cls) => cls.startsWith('hljs') || cls.startsWith('language-'),
+		);
+		for (const cls of toRemove) {
+			codeEl.classList.remove(cls);
+		}
 		if (language && hljs.getLanguage(language)) {
 			codeEl.classList.add(`language-${language}`);
 			hljs.highlightElement(codeEl);
@@ -200,8 +201,8 @@ function createDefaultCodeBlockView(node: Node) {
 			type: string;
 			target: globalThis.Node;
 		}): boolean {
-			// Ignore highlight.js span insertions outside direct text edits
-			if (mutation.type === 'childList' && !code.contains(mutation.target)) {
+			// Ignore highlight.js span insertions (childList mutations)
+			if (mutation.type === 'childList') {
 				return true;
 			}
 			return false;

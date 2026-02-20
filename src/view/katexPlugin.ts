@@ -31,20 +31,24 @@ function renderKatex(
 	value: string,
 	displayMode: boolean,
 ): void {
-	loadKatex().then(() => {
-		if (!katexModule) {
+	loadKatex()
+		.then(() => {
+			if (!katexModule) {
+				container.textContent = value;
+				return;
+			}
+			try {
+				katexModule.default.render(value, container, {
+					throwOnError: false,
+					displayMode,
+				});
+			} catch {
+				container.textContent = value;
+			}
+		})
+		.catch(() => {
 			container.textContent = value;
-			return;
-		}
-		try {
-			katexModule.default.render(value, container, {
-				throwOnError: false,
-				displayMode,
-			});
-		} catch {
-			container.textContent = value;
-		}
-	});
+		});
 }
 
 // ---------------------------------------------------------------------------

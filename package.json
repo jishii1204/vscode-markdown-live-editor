@@ -103,7 +103,6 @@
     "katex": "^0.16.28",
     "mermaid": "^11.12.3",
     "remark-emoji": "^5.0.2",
-    "remark-github-alerts": "^0.1.1",
     "remark-math": "^6.0.0"
   }
 }
