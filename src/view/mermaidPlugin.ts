@@ -1,25 +1,26 @@
 import type { Node } from '@milkdown/prose/model';
 import { Plugin, PluginKey } from '@milkdown/prose/state';
 import { $prose } from '@milkdown/utils';
+import type { HLJSApi } from 'highlight.js';
 
 let idCounter = 0;
 
-// Lazy-loaded highlight.js reference
-let hljsModule: typeof import('highlight.js') | null = null;
+// Lazy-loaded highlight.js reference (core + selected languages only)
+let hljs: HLJSApi | null = null;
 let hljsLoading: Promise<void> | null = null;
 
 async function loadHljs(): Promise<void> {
-	if (hljsModule) return;
+	if (hljs) return;
 	if (hljsLoading) {
 		await hljsLoading;
 		return;
 	}
 	hljsLoading = (async () => {
 		try {
-			hljsModule = await import('highlight.js');
+			hljs = (await import('./hljs')).default;
 		} catch (e) {
 			console.error('[hljs] load failed:', e);
-			hljsModule = null;
+			hljs = null;
 		}
 	})();
 	await hljsLoading;
@@ -27,8 +28,7 @@ async function loadHljs(): Promise<void> {
 
 function applyHighlight(codeEl: HTMLElement, language: string): void {
 	loadHljs().then(() => {
-		if (!hljsModule) return;
-		const hljs = hljsModule.default;
+		if (!hljs) return;
 		// Remove previous highlighting (collect first to avoid mutating during iteration)
 		const toRemove = Array.from(codeEl.classList).filter(
 			(cls) => cls.startsWith('hljs') || cls.startsWith('language-'),
@@ -40,7 +40,7 @@ function applyHighlight(codeEl: HTMLElement, language: string): void {
 			codeEl.classList.add(`language-${language}`);
 			hljs.highlightElement(codeEl);
 		} else if (codeEl.textContent?.trim()) {
-			// Auto-detect if no language specified
+			// Auto-detect from registered languages
 			const result = hljs.highlightAuto(codeEl.textContent);
 			codeEl.innerHTML = result.value;
 		}
