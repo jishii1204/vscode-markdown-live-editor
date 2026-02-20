@@ -97,6 +97,12 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		);
 		const nonce = getNonce();
 
+		const config = vscode.workspace.getConfiguration('markdownLiveEditor');
+		const customCss = config.get<string>('customCss', '');
+		const customStyleTag = customCss
+			? `\n\t<style nonce="${nonce}">${customCss}</style>`
+			: '';
+
 		return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,7 +110,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="Content-Security-Policy"
 		content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' 'unsafe-eval'; img-src ${webview.cspSource} data: blob:;">
-	<link href="${styleUri}" rel="stylesheet">
+	<link href="${styleUri}" rel="stylesheet">${customStyleTag}
 	<title>Markdown Live Editor</title>
 </head>
 <body>
