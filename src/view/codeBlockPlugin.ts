@@ -75,7 +75,8 @@ function parseHighlightHtml(
 				.replace(/&amp;/g, '&')
 				.replace(/&lt;/g, '<')
 				.replace(/&gt;/g, '>')
-				.replace(/&quot;/g, '"');
+				.replace(/&quot;/g, '"')
+				.replace(/&#x27;/g, "'");
 
 			if (classStack.length > 0 && text.length > 0) {
 				ranges.push({
