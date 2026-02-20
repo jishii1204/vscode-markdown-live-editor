@@ -3,14 +3,33 @@
 A WYSIWYG Markdown editor extension for Visual Studio Code.
 Edit your Markdown files visually — what you see is what you get.
 
-> **Note:** This project is in early development.
+## Features
 
-## Features (Planned)
+- **WYSIWYG editing** — Edit Markdown visually with [Milkdown](https://milkdown.dev/) (ProseMirror-based)
+- **Bidirectional sync** — Changes in the visual editor update the source file, and vice versa
+- **GFM support** — Tables, task lists, strikethrough, footnotes
+- **Syntax highlighting** — Code blocks with language-aware highlighting via [highlight.js](https://highlightjs.org/)
+- **Mermaid diagrams** — Live preview of `mermaid` code blocks
+- **KaTeX math** — Inline `$...$` and block `$$...$$` math rendering
+- **GitHub Alerts** — `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`
+- **Emoji shortcodes** — `:smile:` → 😄, `:rocket:` → 🚀
+- **Custom CSS** — Inject your own styles via `markdownLiveEditor.customCss` setting
+- **VS Code theme integration** — Adapts to light/dark/high-contrast themes
 
-- WYSIWYG editing of Markdown files directly in VS Code
-- Bidirectional sync between source and visual editor
-- GFM (GitHub Flavored Markdown) support: tables, task lists, strikethrough
-- Slash commands for quick formatting
+## Usage
+
+### Opening the Editor
+
+- **Command Palette**: `Markdown Live Editor: Open with Markdown Live Editor`
+- **Keyboard shortcut**: `Ctrl+Shift+Alt+M` (Mac: `Cmd+Shift+Alt+M`) while editing a Markdown file
+- **Explorer context menu**: Right-click a `.md` file → "Open with Markdown Live Editor"
+- **Editor tab context menu**: Right-click the tab of an open `.md` file
+
+### Settings
+
+| Setting | Description |
+|---------|-------------|
+| `markdownLiveEditor.customCss` | Custom CSS to inject into the editor |
 
 ## Development
 
@@ -31,7 +50,7 @@ npm install
 
 1. Open this project in VS Code
 2. Press `F5` to launch the Extension Development Host
-3. Run the command `Markdown Live Editor: Hello World` from the Command Palette
+3. Open any `.md` file, then use the command palette or context menu to open it with Markdown Live Editor
 
 ### Build
 
@@ -39,11 +58,24 @@ npm install
 npm run compile
 ```
 
+### Lint
+
+```bash
+npm run lint        # Check
+npm run lint:fix    # Auto-fix
+```
+
 ## Tech Stack
 
 - TypeScript
 - VS Code Extension API (CustomTextEditorProvider)
-- esbuild
+- [Milkdown](https://milkdown.dev/) — WYSIWYG Markdown editor framework
+- [ProseMirror](https://prosemirror.net/) — Rich text editing toolkit
+- [highlight.js](https://highlightjs.org/) — Syntax highlighting
+- [Mermaid](https://mermaid.js.org/) — Diagram rendering
+- [KaTeX](https://katex.org/) — Math typesetting
+- [esbuild](https://esbuild.github.io/) — Bundler
+- [Biome](https://biomejs.dev/) — Linter & formatter
 
 ## License
 

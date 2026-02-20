@@ -27,40 +27,43 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
-		// Track whether we are currently applying an edit from the webview
-		// to prevent infinite update loops
-		let isApplyingEdit = false;
+		// Counter to track in-flight edits from the webview.
+		// Using a counter instead of a boolean prevents a race condition
+		// where rapid consecutive updates could reset the flag prematurely.
+		let pendingEdits = 0;
 
-		// Send initial content to webview once it's ready
-		const onWebviewReady = webviewPanel.webview.onDidReceiveMessage(
-			(message) => {
-				if (message.type === 'ready') {
-					webviewPanel.webview.postMessage({
-						type: 'init',
-						body: document.getText(),
-					});
-				}
-			},
-		);
-
-		// Handle messages from the webview
+		// Handle all messages from the webview in a single listener
 		const onDidReceiveMessage = webviewPanel.webview.onDidReceiveMessage(
 			(message) => {
-				if (message.type === 'update') {
-					const text = message.body as string;
-					if (text === document.getText()) {
-						return;
+				switch (message.type) {
+					case 'ready':
+						webviewPanel.webview.postMessage({
+							type: 'init',
+							body: document.getText(),
+						});
+						break;
+					case 'update': {
+						const text = message.body as string;
+						if (text === document.getText()) {
+							return;
+						}
+						pendingEdits++;
+						const edit = new vscode.WorkspaceEdit();
+						edit.replace(
+							document.uri,
+							new vscode.Range(0, 0, document.lineCount, 0),
+							text,
+						);
+						vscode.workspace.applyEdit(edit).then(
+							() => {
+								pendingEdits--;
+							},
+							() => {
+								pendingEdits--;
+							},
+						);
+						break;
 					}
-					isApplyingEdit = true;
-					const edit = new vscode.WorkspaceEdit();
-					edit.replace(
-						document.uri,
-						new vscode.Range(0, 0, document.lineCount, 0),
-						text,
-					);
-					vscode.workspace.applyEdit(edit).then(() => {
-						isApplyingEdit = false;
-					});
 				}
 			},
 		);
@@ -71,7 +74,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 				if (e.document.uri.toString() !== document.uri.toString()) {
 					return;
 				}
-				if (isApplyingEdit) {
+				if (pendingEdits > 0) {
 					return;
 				}
 				webviewPanel.webview.postMessage({
@@ -82,7 +85,6 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		);
 
 		webviewPanel.onDidDispose(() => {
-			onWebviewReady.dispose();
 			onDidReceiveMessage.dispose();
 			onDidChangeTextDocument.dispose();
 		});
@@ -112,7 +114,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource}; script-src 'nonce-${nonce}' 'unsafe-eval'; img-src ${webview.cspSource} data: blob:;">
+		content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource}; script-src 'nonce-${nonce}' 'unsafe-eval'; img-src ${webview.cspSource} https: data: blob:;">
 	<link href="${katexCssUri}" rel="stylesheet">
 	<link href="${styleUri}" rel="stylesheet">${customStyleTag}
 	<title>Markdown Live Editor</title>
