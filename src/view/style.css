@@ -34,6 +34,8 @@ body {
 .ProseMirror {
 	outline: none;
 	min-height: 100vh;
+	white-space: pre-wrap;
+	word-wrap: break-word;
 }
 
 /* Reset margin top */
@@ -248,4 +250,54 @@ body {
 /* GFM strikethrough */
 .ProseMirror del {
 	text-decoration: line-through;
+}
+
+/* Mermaid diagram blocks */
+.mermaid-block {
+	margin-bottom: 16px;
+}
+
+.mermaid-code {
+	display: none;
+	background-color: var(--vscode-textCodeBlock-background);
+	border: 1px solid var(--vscode-widget-border);
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+.mermaid-code.mermaid-code--visible {
+	display: block;
+}
+
+.mermaid-preview {
+	cursor: pointer;
+	padding: 16px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	text-align: center;
+}
+
+.mermaid-preview:hover {
+	border-color: var(--vscode-widget-border);
+}
+
+.mermaid-preview.mermaid-preview--editing {
+	opacity: 0.5;
+}
+
+.mermaid-preview svg {
+	max-width: 100%;
+	height: auto;
+}
+
+.mermaid-placeholder,
+.mermaid-error {
+	padding: 16px;
+	font-style: italic;
+	opacity: 0.6;
+}
+
+.mermaid-error {
+	color: var(--vscode-errorForeground, #f44747);
 }
