@@ -54,9 +54,14 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 							new vscode.Range(0, 0, document.lineCount, 0),
 							text,
 						);
-						vscode.workspace.applyEdit(edit).then(() => {
-							pendingEdits--;
-						});
+						vscode.workspace.applyEdit(edit).then(
+							() => {
+								pendingEdits--;
+							},
+							() => {
+								pendingEdits--;
+							},
+						);
 						break;
 					}
 				}
