@@ -10,6 +10,7 @@ import {
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
+import { mermaidPlugin } from './mermaidPlugin';
 
 declare function acquireVsCodeApi(): {
 	postMessage(message: unknown): void;
@@ -18,6 +19,22 @@ declare function acquireVsCodeApi(): {
 };
 
 const vscode = acquireVsCodeApi();
+
+// Global error handler — show errors visually in the webview
+function showError(msg: string): void {
+	console.error(`[view] ${msg}`);
+	const el = document.createElement('pre');
+	el.style.cssText =
+		'color:#f44;background:#1e1e1e;padding:16px;margin:16px;border:2px solid #f44;font-size:13px;white-space:pre-wrap;';
+	el.textContent = msg;
+	document.body.prepend(el);
+}
+window.onerror = (_msg, _src, _line, _col, err) => {
+	showError(`Uncaught: ${err?.stack || err || _msg}`);
+};
+window.addEventListener('unhandledrejection', (e) => {
+	showError(`Unhandled rejection: ${e.reason?.stack || e.reason}`);
+});
 
 let editor: Editor | null = null;
 let isUpdatingFromExtension = false;
@@ -64,7 +81,8 @@ async function createEditor(
 		})
 		.use(commonmark)
 		.use(gfm)
-		.use(listener);
+		.use(listener)
+		.use(mermaidPlugin);
 
 	await instance.create();
 
@@ -118,9 +136,13 @@ window.addEventListener('message', (event) => {
 			if (!container) {
 				return;
 			}
-			createEditor(container, message.body).then((e) => {
-				editor = e;
-			});
+			createEditor(container, message.body)
+				.then((e) => {
+					editor = e;
+				})
+				.catch((err) => {
+					showError(`Editor init failed: ${err?.stack || err}`);
+				});
 			break;
 		}
 		case 'update': {
