@@ -28,7 +28,48 @@
         ],
         "priority": "option"
       }
-    ]
+    ],
+    "commands": [
+      {
+        "command": "markdownLiveEditor.openEditor",
+        "title": "Open with Markdown Live Editor",
+        "category": "Markdown Live Editor"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "ctrl+shift+alt+m",
+        "command": "markdownLiveEditor.openEditor",
+        "mac": "cmd+shift+alt+m",
+        "when": "editorTextFocus && editorLangId == markdown"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceLangId == markdown",
+          "command": "markdownLiveEditor.openEditor",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "when": "resourceLangId == markdown",
+          "command": "markdownLiveEditor.openEditor",
+          "group": "1_open"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Markdown Live Editor",
+      "properties": {
+        "markdownLiveEditor.customCss": {
+          "type": "string",
+          "default": "",
+          "description": "Custom CSS to inject into the Markdown Live Editor."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
