@@ -10,6 +10,14 @@ import {
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
+import { alertPlugin } from './alertPlugin';
+import { emojiPlugin } from './emojiPlugin';
+import {
+	mathDisplaySchema,
+	mathInlineSchema,
+	mathViewPlugin,
+	remarkMathPlugin,
+} from './katexPlugin';
 import { mermaidPlugin } from './mermaidPlugin';
 
 declare function acquireVsCodeApi(): {
@@ -81,8 +89,14 @@ async function createEditor(
 		})
 		.use(commonmark)
 		.use(gfm)
+		.use(remarkMathPlugin)
+		.use(mathInlineSchema)
+		.use(mathDisplaySchema)
+		.use(emojiPlugin)
 		.use(listener)
-		.use(mermaidPlugin);
+		.use(mermaidPlugin)
+		.use(alertPlugin)
+		.use(mathViewPlugin);
 
 	await instance.create();
 

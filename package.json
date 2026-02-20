@@ -84,6 +84,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
+    "@types/katex": "^0.16.8",
     "@types/node": "22.x",
     "@types/vscode": "^1.109.0",
     "esbuild": "^0.27.2",
@@ -98,6 +99,11 @@
     "@milkdown/preset-commonmark": "^7.18.0",
     "@milkdown/preset-gfm": "^7.18.0",
     "@milkdown/prose": "^7.18.0",
-    "mermaid": "^11.12.3"
+    "highlight.js": "^11.11.1",
+    "katex": "^0.16.28",
+    "mermaid": "^11.12.3",
+    "remark-emoji": "^5.0.2",
+    "remark-github-alerts": "^0.1.1",
+    "remark-math": "^6.0.0"
   }
 }

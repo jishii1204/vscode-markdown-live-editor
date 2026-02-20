@@ -4,6 +4,48 @@ import { $prose } from '@milkdown/utils';
 
 let idCounter = 0;
 
+// Lazy-loaded highlight.js reference
+let hljsModule: typeof import('highlight.js') | null = null;
+let hljsLoading: Promise<void> | null = null;
+
+async function loadHljs(): Promise<void> {
+	if (hljsModule) return;
+	if (hljsLoading) {
+		await hljsLoading;
+		return;
+	}
+	hljsLoading = (async () => {
+		try {
+			hljsModule = await import('highlight.js');
+		} catch (e) {
+			console.error('[hljs] load failed:', e);
+			hljsModule = null;
+		}
+	})();
+	await hljsLoading;
+}
+
+function applyHighlight(codeEl: HTMLElement, language: string): void {
+	loadHljs().then(() => {
+		if (!hljsModule) return;
+		const hljs = hljsModule.default;
+		// Remove previous highlighting
+		codeEl.classList.forEach((cls) => {
+			if (cls.startsWith('hljs') || cls.startsWith('language-')) {
+				codeEl.classList.remove(cls);
+			}
+		});
+		if (language && hljs.getLanguage(language)) {
+			codeEl.classList.add(`language-${language}`);
+			hljs.highlightElement(codeEl);
+		} else if (codeEl.textContent?.trim()) {
+			// Auto-detect if no language specified
+			const result = hljs.highlightAuto(codeEl.textContent);
+			codeEl.innerHTML = result.value;
+		}
+	});
+}
+
 // Lazy-loaded mermaid reference
 let mermaidModule: typeof import('mermaid') | null = null;
 let mermaidLoading: Promise<void> | null = null;
@@ -125,9 +167,19 @@ function createMermaidView(node: Node) {
 
 function createDefaultCodeBlockView(node: Node) {
 	const dom = document.createElement('pre');
-	dom.setAttribute('data-language', node.attrs.language || '');
+	const language = node.attrs.language || '';
+	dom.setAttribute('data-language', language);
+	dom.classList.add('hljs');
 	const code = document.createElement('code');
 	dom.appendChild(code);
+
+	// Schedule initial highlighting after ProseMirror populates the content
+	let currentLanguage = language;
+	requestAnimationFrame(() => {
+		if (code.textContent?.trim()) {
+			applyHighlight(code, currentLanguage);
+		}
+	});
 
 	return {
 		dom,
@@ -135,8 +187,24 @@ function createDefaultCodeBlockView(node: Node) {
 		update(updatedNode: Node): boolean {
 			if (updatedNode.type.name !== 'code_block') return false;
 			if (updatedNode.attrs.language === 'mermaid') return false;
-			dom.setAttribute('data-language', updatedNode.attrs.language || '');
+			const newLang = updatedNode.attrs.language || '';
+			dom.setAttribute('data-language', newLang);
+			currentLanguage = newLang;
+			// Re-highlight on content or language change
+			requestAnimationFrame(() => {
+				applyHighlight(code, currentLanguage);
+			});
 			return true;
+		},
+		ignoreMutation(mutation: {
+			type: string;
+			target: globalThis.Node;
+		}): boolean {
+			// Ignore highlight.js span insertions outside direct text edits
+			if (mutation.type === 'childList' && !code.contains(mutation.target)) {
+				return true;
+			}
+			return false;
 		},
 	};
 }

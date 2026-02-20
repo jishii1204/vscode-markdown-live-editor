@@ -301,3 +301,182 @@ body {
 .mermaid-error {
 	color: var(--vscode-errorForeground, #f44747);
 }
+
+/* ============================================
+   Syntax highlighting (highlight.js)
+   Uses VS Code CSS variables for theme-awareness
+   ============================================ */
+
+.ProseMirror pre.hljs {
+	color: var(--vscode-editor-foreground);
+}
+
+.ProseMirror pre code .hljs-keyword,
+.ProseMirror pre code .hljs-selector-tag,
+.ProseMirror pre code .hljs-built_in {
+	color: var(--vscode-debugTokenExpression-name, #569cd6);
+}
+
+.ProseMirror pre code .hljs-string,
+.ProseMirror pre code .hljs-addition {
+	color: var(--vscode-debugTokenExpression-string, #ce9178);
+}
+
+.ProseMirror pre code .hljs-number,
+.ProseMirror pre code .hljs-literal {
+	color: var(--vscode-debugTokenExpression-number, #b5cea8);
+}
+
+.ProseMirror pre code .hljs-comment,
+.ProseMirror pre code .hljs-quote {
+	color: var(--vscode-descriptionForeground, #6a9955);
+	font-style: italic;
+}
+
+.ProseMirror pre code .hljs-type,
+.ProseMirror pre code .hljs-class .hljs-title,
+.ProseMirror pre code .hljs-title {
+	color: var(--vscode-symbolIcon-classForeground, #4ec9b0);
+}
+
+.ProseMirror pre code .hljs-function,
+.ProseMirror pre code .hljs-title.function_ {
+	color: var(--vscode-symbolIcon-methodForeground, #dcdcaa);
+}
+
+.ProseMirror pre code .hljs-variable,
+.ProseMirror pre code .hljs-template-variable {
+	color: var(--vscode-symbolIcon-variableForeground, #9cdcfe);
+}
+
+.ProseMirror pre code .hljs-attr,
+.ProseMirror pre code .hljs-attribute {
+	color: var(--vscode-symbolIcon-propertyForeground, #9cdcfe);
+}
+
+.ProseMirror pre code .hljs-regexp {
+	color: #d16969;
+}
+
+.ProseMirror pre code .hljs-deletion {
+	color: var(--vscode-errorForeground, #f44747);
+}
+
+.ProseMirror pre code .hljs-meta,
+.ProseMirror pre code .hljs-meta .hljs-keyword {
+	color: var(--vscode-textPreformat-foreground, #c586c0);
+}
+
+.ProseMirror pre code .hljs-tag {
+	color: var(--vscode-editor-foreground, #808080);
+}
+
+.ProseMirror pre code .hljs-name,
+.ProseMirror pre code .hljs-selector-id,
+.ProseMirror pre code .hljs-selector-class {
+	color: var(--vscode-debugTokenExpression-name, #569cd6);
+}
+
+.ProseMirror pre code .hljs-emphasis {
+	font-style: italic;
+}
+
+.ProseMirror pre code .hljs-strong {
+	font-weight: bold;
+}
+
+/* ============================================
+   GitHub-style alerts
+   > [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]
+   ============================================ */
+
+.markdown-alert {
+	padding: 8px 16px;
+	margin-bottom: 16px;
+	border-left-width: 4px;
+	border-left-style: solid;
+	border-radius: 2px;
+}
+
+.markdown-alert-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.markdown-alert-title svg {
+	flex-shrink: 0;
+}
+
+/* Hide the [!NOTE] etc. marker text */
+.markdown-alert-marker {
+	display: none;
+}
+
+/* NOTE - blue */
+.markdown-alert-note {
+	border-left-color: #539bf5;
+	background-color: rgba(83, 155, 245, 0.06);
+}
+
+.markdown-alert-title-note {
+	color: #539bf5;
+}
+
+/* TIP - green */
+.markdown-alert-tip {
+	border-left-color: #57ab5a;
+	background-color: rgba(87, 171, 90, 0.06);
+}
+
+.markdown-alert-title-tip {
+	color: #57ab5a;
+}
+
+/* IMPORTANT - purple */
+.markdown-alert-important {
+	border-left-color: #986ee2;
+	background-color: rgba(152, 110, 226, 0.06);
+}
+
+.markdown-alert-title-important {
+	color: #986ee2;
+}
+
+/* WARNING - yellow */
+.markdown-alert-warning {
+	border-left-color: #c69026;
+	background-color: rgba(198, 144, 38, 0.06);
+}
+
+.markdown-alert-title-warning {
+	color: #c69026;
+}
+
+/* CAUTION - red */
+.markdown-alert-caution {
+	border-left-color: #e5534b;
+	background-color: rgba(229, 83, 75, 0.06);
+}
+
+.markdown-alert-title-caution {
+	color: #e5534b;
+}
+
+/* ============================================
+   KaTeX math rendering
+   $...$ (inline) and $$...$$ (block)
+   ============================================ */
+
+.math-inline-rendered {
+	display: inline;
+}
+
+.math-display-rendered {
+	display: block;
+	text-align: center;
+	margin: 16px 0;
+	overflow-x: auto;
+}
