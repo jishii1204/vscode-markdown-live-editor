@@ -1,0 +1,56 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "12:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+
+    groups:
+      milkdown:
+        patterns:
+          - "@milkdown/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      prosemirror:
+        patterns:
+          - "prosemirror-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      build-tools:
+        patterns:
+          - "esbuild"
+          - "typescript"
+          - "@biomejs/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+    labels:
+      - "dependencies"
+      - "automated"
+
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "12:00"
+      timezone: "Asia/Tokyo"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+    commit-message:
+      prefix: "chore(ci)"
