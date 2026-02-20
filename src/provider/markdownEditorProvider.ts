@@ -27,10 +27,11 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
-		// Counter to track in-flight edits from the webview.
-		// Using a counter instead of a boolean prevents a race condition
-		// where rapid consecutive updates could reset the flag prematurely.
-		let pendingEdits = 0;
+		// Track the last content received from the webview to prevent
+		// echo: when onDidChangeTextDocument fires for our own edit,
+		// we compare against this value instead of relying solely on
+		// pendingEdits (which can race with microtask timing).
+		let lastWebviewContent = '';
 
 		// Handle all messages from the webview in a single listener
 		const onDidReceiveMessage = webviewPanel.webview.onDidReceiveMessage(
@@ -47,39 +48,35 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 						if (text === document.getText()) {
 							return;
 						}
-						pendingEdits++;
+						lastWebviewContent = text;
 						const edit = new vscode.WorkspaceEdit();
 						edit.replace(
 							document.uri,
 							new vscode.Range(0, 0, document.lineCount, 0),
 							text,
 						);
-						vscode.workspace.applyEdit(edit).then(
-							() => {
-								pendingEdits--;
-							},
-							() => {
-								pendingEdits--;
-							},
-						);
+						vscode.workspace.applyEdit(edit);
 						break;
 					}
 				}
 			},
 		);
 
-		// Sync external changes to webview
+		// Sync external changes (e.g. from text editor) to webview.
+		// Skip if the content matches what the webview last sent us
+		// (i.e. the change originated from the webview itself).
 		const onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument(
 			(e) => {
 				if (e.document.uri.toString() !== document.uri.toString()) {
 					return;
 				}
-				if (pendingEdits > 0) {
+				const currentText = document.getText();
+				if (currentText === lastWebviewContent) {
 					return;
 				}
 				webviewPanel.webview.postMessage({
 					type: 'update',
-					body: document.getText(),
+					body: currentText,
 				});
 			},
 		);
@@ -100,6 +97,9 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		const katexCssUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this.context.extensionUri, 'media', 'katex.min.css'),
 		);
+		const mermaidUri = webview.asWebviewUri(
+			vscode.Uri.joinPath(this.context.extensionUri, 'media', 'mermaid.js'),
+		);
 		const nonce = getNonce();
 
 		const config = vscode.workspace.getConfiguration('markdownLiveEditor');
@@ -114,13 +114,13 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource}; script-src 'nonce-${nonce}' 'unsafe-eval'; img-src ${webview.cspSource} https: data: blob:;">
+		content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource}; script-src 'nonce-${nonce}' ${webview.cspSource} 'unsafe-eval'; img-src ${webview.cspSource} https: data: blob:;">
 	<link href="${katexCssUri}" rel="stylesheet">
 	<link href="${styleUri}" rel="stylesheet">${customStyleTag}
 	<title>Markdown Live Editor</title>
 </head>
 <body>
-	<div id="editor"></div>
+	<div id="editor" data-mermaid-uri="${mermaidUri}"></div>
 	<script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;

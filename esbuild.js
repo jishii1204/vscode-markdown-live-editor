@@ -111,11 +111,33 @@ async function main() {
 		],
 	});
 
+	// Mermaid bundle (browser, separate lazy-loaded file)
+	const mermaidCtx = await esbuild.context({
+		entryPoints: ['src/view/mermaid-entry.ts'],
+		bundle: true,
+		format: 'iife',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'browser',
+		outfile: 'media/mermaid.js',
+		logLevel: 'silent',
+		plugins: [esbuildProblemMatcherPlugin],
+	});
+
 	if (watch) {
-		await Promise.all([extCtx.watch(), viewCtx.watch()]);
+		await Promise.all([extCtx.watch(), viewCtx.watch(), mermaidCtx.watch()]);
 	} else {
-		await Promise.all([extCtx.rebuild(), viewCtx.rebuild()]);
-		await Promise.all([extCtx.dispose(), viewCtx.dispose()]);
+		await Promise.all([
+			extCtx.rebuild(),
+			viewCtx.rebuild(),
+			mermaidCtx.rebuild(),
+		]);
+		await Promise.all([
+			extCtx.dispose(),
+			viewCtx.dispose(),
+			mermaidCtx.dispose(),
+		]);
 	}
 }
 
