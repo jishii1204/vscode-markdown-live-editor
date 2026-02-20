@@ -7,10 +7,12 @@ import {
 	rootCtx,
 	serializerCtx,
 } from '@milkdown/core';
-import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
+import { Plugin } from '@milkdown/prose/state';
+import { $prose } from '@milkdown/utils';
 import { alertPlugin } from './alertPlugin';
+import { codeBlockPlugin, highlightPlugin } from './codeBlockPlugin';
 import { emojiPlugin } from './emojiPlugin';
 import {
 	mathDisplaySchema,
@@ -18,7 +20,6 @@ import {
 	mathViewPlugin,
 	remarkMathPlugin,
 } from './katexPlugin';
-import { mermaidPlugin } from './mermaidPlugin';
 
 declare function acquireVsCodeApi(): {
 	postMessage(message: unknown): void;
@@ -52,6 +53,38 @@ let isUpdatingFromExtension = false;
 let normalizedBaseline = '';
 let isInitializing = false;
 
+// Debounce timer for sending updates to the extension host.
+// Batches rapid keystrokes into a single postMessage call.
+let updateTimer: ReturnType<typeof setTimeout> | null = null;
+const UPDATE_DELAY_MS = 300;
+
+// ProseMirror plugin that detects doc changes and syncs to the extension host.
+// Unlike Milkdown's markdownUpdated listener, this does NOT serialize the
+// document on every keystroke. Serialization only happens when the debounce
+// timer fires (after the user stops typing for UPDATE_DELAY_MS).
+const syncPlugin = $prose((ctx) => {
+	return new Plugin({
+		view() {
+			return {
+				update(view, prevState) {
+					if (isInitializing || isUpdatingFromExtension) return;
+					if (view.state.doc.eq(prevState.doc)) return;
+
+					if (updateTimer) clearTimeout(updateTimer);
+					updateTimer = setTimeout(() => {
+						updateTimer = null;
+						const serializer = ctx.get(serializerCtx);
+						const md = serializer(view.state.doc);
+						if (md === normalizedBaseline) return;
+						vscode.postMessage({ type: 'update', body: md });
+						normalizedBaseline = md;
+					}, UPDATE_DELAY_MS);
+				},
+			};
+		},
+	});
+});
+
 async function createEditor(
 	container: HTMLElement,
 	markdown: string,
@@ -62,30 +95,6 @@ async function createEditor(
 		.config((ctx) => {
 			ctx.set(rootCtx, container);
 			ctx.set(defaultValueCtx, markdown);
-
-			ctx.get(listenerCtx).markdownUpdated((_ctx, md, prevMd) => {
-				// During initialization, capture the normalized baseline
-				// but don't send any update to the extension host
-				if (isInitializing) {
-					normalizedBaseline = md;
-					return;
-				}
-
-				if (isUpdatingFromExtension) {
-					return;
-				}
-				if (md === prevMd) {
-					return;
-				}
-
-				// Only send if the content actually changed from baseline
-				if (md === normalizedBaseline) {
-					return;
-				}
-
-				vscode.postMessage({ type: 'update', body: md });
-				normalizedBaseline = md;
-			});
 		})
 		.use(commonmark)
 		.use(gfm)
@@ -93,8 +102,9 @@ async function createEditor(
 		.use(mathInlineSchema)
 		.use(mathDisplaySchema)
 		.use(emojiPlugin)
-		.use(listener)
-		.use(mermaidPlugin)
+		.use(syncPlugin)
+		.use(codeBlockPlugin)
+		.use(highlightPlugin)
 		.use(alertPlugin)
 		.use(mathViewPlugin);
 

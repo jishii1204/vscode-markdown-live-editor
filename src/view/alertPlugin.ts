@@ -1,3 +1,4 @@
+import type { EditorState, Transaction } from '@milkdown/prose/state';
 import { Plugin, PluginKey } from '@milkdown/prose/state';
 import { Decoration, DecorationSet } from '@milkdown/prose/view';
 import { $prose } from '@milkdown/utils';
@@ -20,59 +21,76 @@ const ALERT_ICONS: Record<string, string> = {
  * and add CSS classes + a title banner via ProseMirror decorations.
  */
 export const alertPlugin = $prose(() => {
+	const key = new PluginKey<DecorationSet>('github-alerts');
+
+	function buildDecorations(state: EditorState): DecorationSet {
+		const decorations: Decoration[] = [];
+
+		state.doc.descendants((node, pos) => {
+			if (node.type.name !== 'blockquote') return;
+
+			// Check the first child paragraph for alert marker
+			const firstChild = node.firstChild;
+			if (!firstChild || firstChild.type.name !== 'paragraph') return;
+
+			const text = firstChild.textContent;
+			const match = ALERT_PATTERN.exec(text);
+			if (!match) return;
+
+			const alertType = match[1].toLowerCase();
+			const title =
+				match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+			const icon = ALERT_ICONS[alertType] || '';
+
+			// Add class decoration to the blockquote
+			decorations.push(
+				Decoration.node(pos, pos + node.nodeSize, {
+					class: `markdown-alert markdown-alert-${alertType}`,
+				}),
+			);
+
+			// Add a widget decoration for the title banner before content
+			decorations.push(
+				Decoration.widget(pos + 1, () => {
+					const banner = document.createElement('div');
+					banner.className = `markdown-alert-title markdown-alert-title-${alertType}`;
+					banner.innerHTML = icon;
+					const span = document.createElement('span');
+					span.textContent = title;
+					banner.appendChild(span);
+					return banner;
+				}),
+			);
+
+			// Hide the [!NOTE] marker text in the first paragraph
+			// The marker occupies positions in the first text node
+			const markerLength = match[0].length;
+			const firstChildPos = pos + 1; // blockquote start + 1
+			const textStart = firstChildPos + 1; // paragraph start + 1
+			decorations.push(
+				Decoration.inline(textStart, textStart + markerLength, {
+					class: 'markdown-alert-marker',
+				}),
+			);
+		});
+
+		return DecorationSet.create(state.doc, decorations);
+	}
+
 	return new Plugin({
-		key: new PluginKey('github-alerts'),
+		key,
+		state: {
+			init: (_config, state) => buildDecorations(state),
+			apply: (tr: Transaction, prev: DecorationSet, _oldState, newState) => {
+				// selection 変更でも decorations は問い合わせられるため、
+				// doc が変わったときだけ再計算する。
+				if (!tr.docChanged) return prev;
+				return buildDecorations(newState);
+			},
+		},
 		props: {
 			decorations(state) {
-				const decorations: Decoration[] = [];
-				state.doc.descendants((node, pos) => {
-					if (node.type.name !== 'blockquote') return;
-
-					// Check the first child paragraph for alert marker
-					const firstChild = node.firstChild;
-					if (!firstChild || firstChild.type.name !== 'paragraph') return;
-
-					const text = firstChild.textContent;
-					const match = ALERT_PATTERN.exec(text);
-					if (!match) return;
-
-					const alertType = match[1].toLowerCase();
-					const title =
-						match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
-					const icon = ALERT_ICONS[alertType] || '';
-
-					// Add class decoration to the blockquote
-					decorations.push(
-						Decoration.node(pos, pos + node.nodeSize, {
-							class: `markdown-alert markdown-alert-${alertType}`,
-						}),
-					);
-
-					// Add a widget decoration for the title banner before content
-					decorations.push(
-						Decoration.widget(pos + 1, () => {
-							const banner = document.createElement('div');
-							banner.className = `markdown-alert-title markdown-alert-title-${alertType}`;
-							banner.innerHTML = icon;
-							const span = document.createElement('span');
-							span.textContent = title;
-							banner.appendChild(span);
-							return banner;
-						}),
-					);
-
-					// Hide the [!NOTE] marker text in the first paragraph
-					// The marker occupies positions in the first text node
-					const markerLength = match[0].length;
-					const firstChildPos = pos + 1; // blockquote start + 1
-					const textStart = firstChildPos + 1; // paragraph start + 1
-					decorations.push(
-						Decoration.inline(textStart, textStart + markerLength, {
-							class: 'markdown-alert-marker',
-						}),
-					);
-				});
-				return DecorationSet.create(state.doc, decorations);
+				return key.getState(state) ?? DecorationSet.empty;
 			},
 		},
 	});
