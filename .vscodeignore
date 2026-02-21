@@ -1,12 +1,16 @@
 .vscode/**
 .vscode-test/**
+.github/**
+.claude/**
 out/**
 node_modules/**
 src/**
 .gitignore
 .yarnrc
 esbuild.js
+biome.json
 vsc-extension-quickstart.md
+test/**
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
