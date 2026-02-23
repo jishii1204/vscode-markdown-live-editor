@@ -1,7 +1,22 @@
 # Markdown Live Editor
 
-A WYSIWYG Markdown editor extension for Visual Studio Code.
+[![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/jishii1204.markdown-live-editor)](https://marketplace.visualstudio.com/items?itemName=jishii1204.markdown-live-editor)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/jishii1204.markdown-live-editor)](https://marketplace.visualstudio.com/items?itemName=jishii1204.markdown-live-editor)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+A WYSIWYG Markdown editor for Visual Studio Code.
 Edit your Markdown files visually — what you see is what you get.
+
+<!-- TODO: Add screenshot -->
+<!-- ![Markdown Live Editor](images/screenshot.png) -->
+
+## Installation
+
+Launch VS Code Quick Open (`Ctrl+P`), paste the following command, and press enter.
+
+```
+ext install jishii1204.markdown-live-editor
+```
 
 ## Features
 
@@ -11,71 +26,51 @@ Edit your Markdown files visually — what you see is what you get.
 - **Syntax highlighting** — Code blocks with language-aware highlighting via [highlight.js](https://highlightjs.org/)
 - **Mermaid diagrams** — Live preview of `mermaid` code blocks
 - **KaTeX math** — Inline `$...$` and block `$$...$$` math rendering
-- **GitHub Alerts** — `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`
+- **GitHub Alerts** — `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`
 - **Emoji shortcodes** — `:smile:` → 😄, `:rocket:` → 🚀
-- **Custom CSS** — Inject your own styles via `markdownLiveEditor.customCss` setting
-- **VS Code theme integration** — Adapts to light/dark/high-contrast themes
+- **Custom CSS** — Inject your own styles via settings
+- **Theme integration** — Adapts to light, dark, and high-contrast themes
 
 ## Usage
 
 ### Opening the Editor
 
-- **Command Palette**: `Markdown Live Editor: Open with Markdown Live Editor`
-- **Keyboard shortcut**: `Ctrl+Shift+Alt+M` (Mac: `Cmd+Shift+Alt+M`) while editing a Markdown file
-- **Explorer context menu**: Right-click a `.md` file → "Open with Markdown Live Editor"
-- **Editor tab context menu**: Right-click the tab of an open `.md` file
+| Method | How |
+|--------|-----|
+| **Command Palette** | `Ctrl+Shift+P` → `Markdown Live Editor: Open with Markdown Live Editor` |
+| **Keyboard shortcut** | `Ctrl+Shift+Alt+M` (Mac: `Cmd+Shift+Alt+M`) while editing a `.md` file |
+| **Explorer context menu** | Right-click a `.md` file → *Open with Markdown Live Editor* |
+| **Editor tab context menu** | Right-click the tab of an open `.md` file |
 
 ### Settings
 
-| Setting | Description |
-|---------|-------------|
-| `markdownLiveEditor.customCss` | Custom CSS to inject into the editor |
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `markdownLiveEditor.customCss` | Custom CSS to inject into the editor | `""` |
 
-## Development
+## Supported Markdown Features
 
-### Prerequisites
+| Feature | Syntax |
+|---------|--------|
+| Headings | `# H1` ... `###### H6` |
+| Bold / Italic | `**bold**` / `*italic*` |
+| Strikethrough | `~~text~~` |
+| Links | `[text](url)` |
+| Images | `![alt](url)` |
+| Code blocks | ` ```language ` |
+| Tables | GFM pipe tables |
+| Task lists | `- [x] done` / `- [ ] todo` |
+| Blockquotes | `> quote` |
+| Footnotes | `text[^1]` / `[^1]: note` |
+| Math (inline) | `$E=mc^2$` |
+| Math (block) | `$$\sum_{i=1}^n i$$` |
+| Mermaid | ` ```mermaid ` |
+| GitHub Alerts | `> [!NOTE]`, `> [!WARNING]`, etc. |
+| Emoji | `:smile:`, `:rocket:`, etc. |
 
-- Node.js 22+
-- npm
+## Contributing
 
-### Setup
-
-```bash
-git clone https://github.com/jishii1204/vscode-markdown-live.git
-cd vscode-markdown-live
-npm install
-```
-
-### Run in Development
-
-1. Open this project in VS Code
-2. Press `F5` to launch the Extension Development Host
-3. Open any `.md` file, then use the command palette or context menu to open it with Markdown Live Editor
-
-### Build
-
-```bash
-npm run compile
-```
-
-### Lint
-
-```bash
-npm run lint        # Check
-npm run lint:fix    # Auto-fix
-```
-
-## Tech Stack
-
-- TypeScript
-- VS Code Extension API (CustomTextEditorProvider)
-- [Milkdown](https://milkdown.dev/) — WYSIWYG Markdown editor framework
-- [ProseMirror](https://prosemirror.net/) — Rich text editing toolkit
-- [highlight.js](https://highlightjs.org/) — Syntax highlighting
-- [Mermaid](https://mermaid.js.org/) — Diagram rendering
-- [KaTeX](https://katex.org/) — Math typesetting
-- [esbuild](https://esbuild.github.io/) — Bundler
-- [Biome](https://biomejs.dev/) — Linter & formatter
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and build instructions.
 
 ## License
 

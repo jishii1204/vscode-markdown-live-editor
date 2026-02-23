@@ -188,33 +188,251 @@ body {
 	font-weight: 600;
 }
 
-/* Table */
+/* ============================================
+   Table base styles
+   ============================================ */
+
 .ProseMirror table {
 	border-collapse: collapse;
 	margin-bottom: 0.7em;
+	width: 100%;
 }
 
 .ProseMirror th {
 	text-align: left;
 	border-bottom: 1px solid;
+	font-weight: 600;
 }
 
 .ProseMirror th,
 .ProseMirror td {
-	padding: 5px 10px;
+	padding: 6px 13px;
+	border: 1px solid rgba(128, 128, 128, 0.35);
 }
 
-.ProseMirror table > tbody > tr + tr > td {
-	border-top: 1px solid;
-}
-
-/* Theme-aware border colors */
 .ProseMirror th {
 	border-color: rgba(128, 128, 128, 0.69);
 }
 
 .ProseMirror td {
-	border-color: rgba(128, 128, 128, 0.18);
+	border-color: rgba(128, 128, 128, 0.35);
+}
+
+/* ============================================
+   Interactive table block (@milkdown/components)
+   Based on Milkdown Crepe theme, adapted for VS Code
+   ============================================ */
+
+/* Container */
+.milkdown-table-block {
+	display: block;
+	margin: 4px 0;
+}
+
+.milkdown-table-block th,
+.milkdown-table-block td {
+	vertical-align: top;
+	box-sizing: border-box;
+	position: relative;
+}
+
+/* --- Handles (shared base) --- */
+.milkdown-table-block .handle {
+	position: absolute;
+	font-size: 14px;
+	transition: opacity 0.2s ease-in-out;
+}
+
+.milkdown-table-block .handle[data-show="false"] {
+	opacity: 0;
+}
+
+.milkdown-table-block svg {
+	fill: var(--vscode-foreground, #cccccc);
+}
+
+/* --- Cell drag handles (column/row grip) --- */
+.milkdown-table-block .cell-handle {
+	z-index: 50;
+	left: -999px;
+	top: -999px;
+	cursor: grab;
+	background-color: var(--vscode-editorWidget-background, #252526);
+	color: var(--vscode-foreground, #cccccc);
+	border-radius: 100px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+	transition:
+		background-color 0.2s ease-in-out,
+		opacity 0.2s ease-in-out;
+}
+
+.milkdown-table-block .cell-handle:hover {
+	opacity: 1;
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.milkdown-table-block .cell-handle:has(.button-group:hover) {
+	background-color: var(--vscode-editorWidget-background, #252526);
+}
+
+.milkdown-table-block .cell-handle[data-role="col-drag-handle"] {
+	transform: translateY(50%);
+	padding: 0 6px;
+	width: 28px;
+	height: 16px;
+}
+
+.milkdown-table-block .cell-handle[data-role="row-drag-handle"] {
+	transform: translateX(50%);
+	padding: 6px 0;
+	width: 16px;
+	height: 28px;
+}
+
+/* --- Button group (align/delete popup) --- */
+.milkdown-table-block .cell-handle .button-group {
+	position: absolute;
+	transform: translateX(-50%);
+	left: 50%;
+	top: -52px;
+	display: flex;
+	background-color: var(--vscode-editorWidget-background, #252526);
+	border: 1px solid var(--vscode-widget-border, #454545);
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.36);
+}
+
+/* Extend hover area to prevent popup from disappearing */
+.milkdown-table-block .cell-handle .button-group::after {
+	content: "";
+	position: absolute;
+	bottom: -8px;
+	height: 8px;
+	background-color: transparent;
+	width: 100%;
+}
+
+.milkdown-table-block .cell-handle .button-group[data-show="false"] {
+	display: none;
+}
+
+.milkdown-table-block .cell-handle .button-group button {
+	cursor: pointer;
+	margin: 6px;
+	padding: 4px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: none;
+	background: transparent;
+	color: var(--vscode-foreground, #cccccc);
+	border-radius: 4px;
+}
+
+.milkdown-table-block .cell-handle .button-group button svg {
+	width: 16px;
+	height: 16px;
+}
+
+.milkdown-table-block .cell-handle .button-group button:hover {
+	border-radius: 8px;
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+/* --- Line handles (add row/column) --- */
+.milkdown-table-block .line-handle {
+	z-index: 20;
+	background-color: var(--vscode-textLink-foreground, #3794ff);
+}
+
+.milkdown-table-block .line-handle:hover {
+	opacity: 1;
+}
+
+.milkdown-table-block .line-handle .add-button {
+	cursor: pointer;
+	background-color: var(--vscode-editorWidget-background, #252526);
+	color: var(--vscode-foreground, #cccccc);
+	border: none;
+	border-radius: 100px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+	transition: background-color 0.2s ease-in-out;
+}
+
+.milkdown-table-block .line-handle .add-button svg {
+	width: 16px;
+	height: 16px;
+}
+
+.milkdown-table-block .line-handle .add-button:hover {
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+/* Row add line (horizontal) */
+.milkdown-table-block [data-role="x-line-drag-handle"] {
+	height: 1px;
+	z-index: 2;
+}
+
+.milkdown-table-block [data-role="x-line-drag-handle"] .add-button {
+	position: absolute;
+	transform: translateX(-50%) translateY(-50%);
+	padding: 6px 0;
+	width: 16px;
+	height: 28px;
+}
+
+/* Column add line (vertical) */
+.milkdown-table-block [data-role="y-line-drag-handle"] {
+	width: 1px;
+	z-index: 1;
+}
+
+.milkdown-table-block [data-role="y-line-drag-handle"] .add-button {
+	position: absolute;
+	transform: translateY(-50%) translateX(-50%);
+	padding: 0 6px;
+	width: 28px;
+	height: 16px;
+}
+
+/* Hide + button when used as drop indicator */
+.milkdown-table-block .line-handle[data-display-type="indicator"] .add-button {
+	display: none;
+}
+
+/* --- Drag preview --- */
+.milkdown-table-block .drag-preview {
+	background-color: var(--vscode-editor-background, #1e1e1e);
+	opacity: 0.4;
+	position: absolute;
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
+	outline: 1px solid var(--vscode-textLink-foreground, #3794ff);
+	outline-offset: -1px;
+}
+
+.milkdown-table-block .drag-preview[data-show="false"] {
+	display: none;
+}
+
+/* --- Cell selection state --- */
+.milkdown-table-block .selectedCell::after {
+	content: "";
+	z-index: 2;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background-color: var(--vscode-editor-selectionBackground, #264f78);
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+.milkdown-table-block .selectedCell ::selection {
+	background: transparent;
 }
 
 /* GFM task list */

@@ -104,6 +104,11 @@ async function main() {
 		platform: 'browser',
 		outfile: 'media/view.js',
 		logLevel: 'silent',
+		define: {
+			__VUE_OPTIONS_API__: 'false',
+			__VUE_PROD_DEVTOOLS__: 'false',
+			__VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false',
+		},
 		plugins: [
 			esbuildProblemMatcherPlugin,
 			copyStylePlugin,

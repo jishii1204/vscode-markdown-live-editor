@@ -20,6 +20,7 @@ import {
 	mathViewPlugin,
 	remarkMathPlugin,
 } from './katexPlugin';
+import { configureTableBlock, tableBlock } from './tableBlockPlugin';
 
 declare function acquireVsCodeApi(): {
 	postMessage(message: unknown): void;
@@ -98,6 +99,8 @@ async function createEditor(
 		})
 		.use(commonmark)
 		.use(gfm)
+		.use(tableBlock)
+		.config(configureTableBlock)
 		.use(remarkMathPlugin)
 		.use(mathInlineSchema)
 		.use(mathDisplaySchema)
