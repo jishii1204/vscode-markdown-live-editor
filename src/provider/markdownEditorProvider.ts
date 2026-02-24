@@ -22,9 +22,16 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		_token: vscode.CancellationToken,
 	): Promise<void> {
 		const documentDir = vscode.Uri.joinPath(document.uri, '..');
+		const workspaceFolder = vscode.workspace.getWorkspaceFolder(
+			document.uri,
+		)?.uri;
+		const localResourceRoots = [this.context.extensionUri, documentDir];
+		if (workspaceFolder) {
+			localResourceRoots.push(workspaceFolder);
+		}
 		webviewPanel.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [this.context.extensionUri, documentDir],
+			localResourceRoots,
 		};
 
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
