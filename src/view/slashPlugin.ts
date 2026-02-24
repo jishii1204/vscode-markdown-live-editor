@@ -175,6 +175,7 @@ interface SlashMenu {
 	getFilteredCount: () => number;
 	getSelectedIndex: () => number;
 	setSelectedIndex: (idx: number) => void;
+	selectByElement: (el: HTMLElement) => void;
 	executeSelected: (ctx: Ctx, view: EditorView) => void;
 }
 
@@ -242,6 +243,13 @@ function createSlashMenu(): SlashMenu {
 		setSelectedIndex: (idx: number) => {
 			selectedIndex = Math.max(0, Math.min(idx, filteredEntries.length - 1));
 			updateSelection();
+		},
+		selectByElement: (el: HTMLElement) => {
+			const idx = filteredEntries.findIndex((entry) => entry.el === el);
+			if (idx !== -1) {
+				selectedIndex = idx;
+				updateSelection();
+			}
 		},
 		executeSelected: (ctx: Ctx, view: EditorView) => {
 			if (
@@ -316,8 +324,11 @@ export function configureSlash(ctx: Ctx): void {
 			// Click handler
 			menu.container.addEventListener('mousedown', (e) => {
 				e.preventDefault();
-				const target = (e.target as HTMLElement).closest('.slash-menu-item');
+				const target = (e.target as HTMLElement).closest(
+					'.slash-menu-item',
+				) as HTMLElement | null;
 				if (!target) return;
+				menu.selectByElement(target);
 				menu.executeSelected(ctx, view);
 				provider.hide();
 			});
