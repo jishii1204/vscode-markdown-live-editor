@@ -20,6 +20,7 @@ import {
 	mathViewPlugin,
 	remarkMathPlugin,
 } from './katexPlugin';
+import { configureSlash, slash, slashKeyboardPlugin } from './slashPlugin';
 import { configureTableBlock, tableBlock } from './tableBlockPlugin';
 
 declare function acquireVsCodeApi(): {
@@ -120,7 +121,10 @@ async function createEditor(
 		.use(codeBlockPlugin)
 		.use(highlightPlugin)
 		.use(alertPlugin)
-		.use(mathViewPlugin);
+		.use(mathViewPlugin)
+		.use(slash)
+		.config(configureSlash)
+		.use(slashKeyboardPlugin);
 
 	await instance.create();
 
