@@ -27,6 +27,7 @@ ext install jishii1204.markdown-live-editor
 - **Mermaid diagrams** — Live preview of `mermaid` code blocks
 - **KaTeX math** — Inline `$...$` and block `$$...$$` math rendering
 - **GitHub Alerts** — `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`
+- **Slash commands** — Type `/` to insert headings, lists, tables, code blocks, math, mermaid diagrams, and more
 - **Emoji shortcodes** — `:smile:` → 😄, `:rocket:` → 🚀
 - **Custom CSS** — Inject your own styles via settings
 - **Theme integration** — Adapts to light, dark, and high-contrast themes
