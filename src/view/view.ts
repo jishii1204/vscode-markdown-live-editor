@@ -14,6 +14,7 @@ import { $prose } from '@milkdown/utils';
 import { alertPlugin } from './alertPlugin';
 import { codeBlockPlugin, highlightPlugin } from './codeBlockPlugin';
 import { emojiPlugin } from './emojiPlugin';
+import { imageViewPlugin, setDocumentDirUri } from './imagePlugin';
 import {
 	mathDisplaySchema,
 	mathInlineSchema,
@@ -122,6 +123,7 @@ async function createEditor(
 		.use(highlightPlugin)
 		.use(alertPlugin)
 		.use(mathViewPlugin)
+		.use(imageViewPlugin)
 		.use(slash)
 		.config(configureSlash)
 		.use(slashKeyboardPlugin);
@@ -183,6 +185,9 @@ window.addEventListener('message', (event) => {
 			const container = document.getElementById('editor');
 			if (!container) {
 				return;
+			}
+			if (message.documentDirUri) {
+				setDocumentDirUri(message.documentDirUri);
 			}
 			createEditor(container, message.body)
 				.then((e) => {

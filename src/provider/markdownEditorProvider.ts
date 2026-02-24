@@ -21,8 +21,10 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel: vscode.WebviewPanel,
 		_token: vscode.CancellationToken,
 	): Promise<void> {
+		const documentDir = vscode.Uri.joinPath(document.uri, '..');
 		webviewPanel.webview.options = {
 			enableScripts: true,
+			localResourceRoots: [this.context.extensionUri, documentDir],
 		};
 
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
@@ -37,12 +39,17 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		const onDidReceiveMessage = webviewPanel.webview.onDidReceiveMessage(
 			(message) => {
 				switch (message.type) {
-					case 'ready':
+					case 'ready': {
+						const documentDirUri = webviewPanel.webview
+							.asWebviewUri(documentDir)
+							.toString();
 						webviewPanel.webview.postMessage({
 							type: 'init',
 							body: document.getText(),
+							documentDirUri,
 						});
 						break;
+					}
 					case 'update': {
 						const text = message.body as string;
 						if (text === document.getText()) {
