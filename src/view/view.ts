@@ -20,6 +20,7 @@ import {
 	mathViewPlugin,
 	remarkMathPlugin,
 } from './katexPlugin';
+import { configureTableBlock, tableBlock } from './tableBlockPlugin';
 
 declare function acquireVsCodeApi(): {
 	postMessage(message: unknown): void;
@@ -44,6 +45,17 @@ window.onerror = (_msg, _src, _line, _col, err) => {
 window.addEventListener('unhandledrejection', (e) => {
 	showError(`Unhandled rejection: ${e.reason?.stack || e.reason}`);
 });
+
+// Strip spurious <br /> that Milkdown's remarkPreserveEmptyLinePlugin
+// inserts into empty table cells during serialization.
+function cleanupTableBr(md: string): string {
+	return md
+		.split('\n')
+		.map((line) =>
+			line.startsWith('|') ? line.replaceAll('<br />', '') : line,
+		)
+		.join('\n');
+}
 
 let editor: Editor | null = null;
 let isUpdatingFromExtension = false;
@@ -74,7 +86,7 @@ const syncPlugin = $prose((ctx) => {
 					updateTimer = setTimeout(() => {
 						updateTimer = null;
 						const serializer = ctx.get(serializerCtx);
-						const md = serializer(view.state.doc);
+						const md = cleanupTableBr(serializer(view.state.doc));
 						if (md === normalizedBaseline) return;
 						vscode.postMessage({ type: 'update', body: md });
 						normalizedBaseline = md;
@@ -98,6 +110,8 @@ async function createEditor(
 		})
 		.use(commonmark)
 		.use(gfm)
+		.use(tableBlock)
+		.config(configureTableBlock)
 		.use(remarkMathPlugin)
 		.use(mathInlineSchema)
 		.use(mathDisplaySchema)
@@ -113,7 +127,9 @@ async function createEditor(
 	// Capture the normalized baseline after editor is fully initialized
 	instance.action((ctx) => {
 		const serializer = ctx.get(serializerCtx);
-		normalizedBaseline = serializer(ctx.get(editorStateCtx).doc);
+		normalizedBaseline = cleanupTableBr(
+			serializer(ctx.get(editorStateCtx).doc),
+		);
 	});
 
 	isInitializing = false;
@@ -129,7 +145,9 @@ function replaceContent(newMarkdown: string): void {
 		editor.action((ctx) => {
 			const view = ctx.get(editorViewCtx);
 			const serializer = ctx.get(serializerCtx);
-			const currentMarkdown = serializer(ctx.get(editorStateCtx).doc);
+			const currentMarkdown = cleanupTableBr(
+				serializer(ctx.get(editorStateCtx).doc),
+			);
 
 			if (currentMarkdown === newMarkdown) {
 				isUpdatingFromExtension = false;
@@ -143,7 +161,9 @@ function replaceContent(newMarkdown: string): void {
 			view.dispatch(tr);
 
 			// Update baseline to the new normalized content
-			normalizedBaseline = serializer(ctx.get(editorStateCtx).doc);
+			normalizedBaseline = cleanupTableBr(
+				serializer(ctx.get(editorStateCtx).doc),
+			);
 			isUpdatingFromExtension = false;
 		});
 	} catch {

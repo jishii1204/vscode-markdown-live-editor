@@ -10,12 +10,27 @@
     "type": "git",
     "url": "https://github.com/jishii1204/vscode-markdown-live"
   },
+  "homepage": "https://github.com/jishii1204/vscode-markdown-live#readme",
+  "bugs": {
+    "url": "https://github.com/jishii1204/vscode-markdown-live/issues"
+  },
   "engines": {
     "vscode": "^1.109.0"
   },
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "markdown",
+    "wysiwyg",
+    "editor",
+    "mermaid",
+    "katex"
+  ],
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
@@ -95,6 +110,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@milkdown/components": "^7.18.0",
     "@milkdown/core": "^7.18.0",
     "@milkdown/ctx": "^7.18.0",
     "@milkdown/preset-commonmark": "^7.18.0",
