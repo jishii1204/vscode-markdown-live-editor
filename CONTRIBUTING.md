@@ -8,8 +8,8 @@
 ## Setup
 
 ```bash
-git clone https://github.com/jishii1204/vscode-markdown-live.git
-cd vscode-markdown-live
+git clone https://github.com/jishii1204/vscode-markdown-live-editor.git
+cd vscode-markdown-live-editor
 npm install
 ```
 
