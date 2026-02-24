@@ -2,6 +2,27 @@
 
 All notable changes to Markdown Live Editor will be documented in this file.
 
+## [0.0.4] - 2026-02-24
+
+### Added
+
+- Relative path image display in the editor (resolves local images via webview URI)
+- Error fallback display for missing images
+- Workspace root access for images in parent directories
+
+## [0.0.3] - 2026-02-24
+
+### Added
+
+- Slash commands — type `/` to insert headings, lists, tables, code blocks, math, mermaid diagrams, and more
+- Keyboard navigation (Arrow keys, Enter, Escape) and text filtering in slash menu
+
+## [0.0.2] - 2026-02-24
+
+### Changed
+
+- CI: exclude devDependencies from npm audit
+
 ## [0.0.1] - 2026-02-21
 
 ### Added
