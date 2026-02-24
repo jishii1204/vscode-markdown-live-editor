@@ -698,3 +698,67 @@ body {
 	margin: 16px 0;
 	overflow-x: auto;
 }
+
+/* ============================================
+   Slash command menu
+   ============================================ */
+
+.slash-menu {
+	display: none;
+	position: absolute;
+	z-index: 1000;
+	min-width: 220px;
+	max-width: 320px;
+	max-height: 320px;
+	overflow-y: auto;
+	background-color: var(--vscode-editorWidget-background, #252526);
+	border: 1px solid var(--vscode-widget-border, #454545);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	padding: 4px 0;
+	font-size: 13px;
+}
+
+.slash-menu[data-show="true"] {
+	display: block;
+}
+
+.slash-menu-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 12px;
+	cursor: pointer;
+	color: var(--vscode-foreground, #cccccc);
+}
+
+.slash-menu-item:hover,
+.slash-menu-item--active {
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.slash-menu-item--active {
+	background-color: var(--vscode-list-activeSelectionBackground, #094771);
+	color: var(--vscode-list-activeSelectionForeground, #ffffff);
+}
+
+.slash-menu-item-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	flex-shrink: 0;
+}
+
+.slash-menu-item-icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+.slash-menu-item-label {
+	flex: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
