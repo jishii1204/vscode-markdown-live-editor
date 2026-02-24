@@ -25,7 +25,14 @@ function resolveImageSrc(src: string): string {
 	// Encode each path segment to handle spaces, Japanese chars, etc.
 	const encoded = cleaned
 		.split('/')
-		.map((s) => encodeURIComponent(s))
+		.map((s) => {
+			try {
+				s = decodeURIComponent(s);
+			} catch {
+				// already decoded or invalid sequence — use as-is
+			}
+			return encodeURIComponent(s);
+		})
 		.join('/');
 	return `${documentDirUri}${encoded}`;
 }
