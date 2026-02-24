@@ -120,7 +120,15 @@ body {
 /* Images */
 .ProseMirror img {
 	max-width: 100%;
-	max-height: 100%;
+	height: auto;
+}
+
+.image-error {
+	display: inline-block;
+	padding: 8px 12px;
+	border: 1px dashed var(--vscode-editorWidget-border, #454545);
+	color: var(--vscode-errorForeground, #f48771);
+	font-size: 0.9em;
 }
 
 /* Links */
