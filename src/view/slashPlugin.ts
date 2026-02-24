@@ -88,15 +88,25 @@ function buildMenuItems(): SlashMenuItem[] {
 			icon: ICONS.taskList,
 			keywords: ['task', 'todo', 'checkbox', 'check'],
 			execute: (ctx) => {
+				// First wrap in bullet list, then set checked attribute
+				callCommand(wrapInBulletListCommand.key)(ctx);
 				const view = ctx.get(editorViewCtx);
 				const { state, dispatch } = view;
 				const { $from } = state.selection;
-				const tr = state.tr.replaceWith(
-					$from.start(),
-					$from.pos,
-					state.schema.text('- [ ] '),
-				);
-				dispatch(tr);
+				// Find the closest list_item and set checked = false
+				for (let d = $from.depth; d > 0; d--) {
+					const node = $from.node(d);
+					if (node.type.name === 'list_item') {
+						const pos = $from.before(d);
+						dispatch(
+							state.tr.setNodeMarkup(pos, undefined, {
+								...node.attrs,
+								checked: false,
+							}),
+						);
+						break;
+					}
+				}
 			},
 		},
 		{
