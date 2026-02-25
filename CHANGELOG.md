@@ -2,6 +2,19 @@
 
 All notable changes to Markdown Live Editor will be documented in this file.
 
+## [0.0.5] - 2026-02-25
+
+### Added
+
+- Floating selection toolbar — select text to show Bold, Italic, Strikethrough, Code, and Link buttons
+- Link tooltip — hover over links to preview URL with edit/delete actions
+- Custom link edit tooltip that always positions above the text (bypasses floating-ui flip)
+
+### Fixed
+
+- Link edit tooltip no longer flips below the text when space is limited above
+- Tooltip focus handling: avoid unnecessary focus calls when tooltip is not visible
+
 ## [0.0.4] - 2026-02-24
 
 ### Added
