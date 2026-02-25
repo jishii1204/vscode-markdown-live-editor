@@ -140,6 +140,183 @@ body {
 	text-decoration: underline;
 }
 
+/* ============================================
+   Floating selection toolbar
+   ============================================ */
+
+.floating-toolbar {
+	display: none;
+	position: absolute;
+	z-index: 1000;
+	align-items: center;
+	background-color: var(--vscode-editorWidget-background, #252526);
+	border: 1px solid var(--vscode-widget-border, #454545);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	padding: 2px;
+	gap: 2px;
+}
+
+.floating-toolbar[data-show="true"] {
+	display: flex;
+}
+
+.toolbar-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: none;
+	border-radius: 4px;
+	background: transparent;
+	color: var(--vscode-foreground, #cccccc);
+	cursor: pointer;
+	padding: 0;
+}
+
+.toolbar-btn svg {
+	width: 16px;
+	height: 16px;
+}
+
+.toolbar-btn:hover {
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.toolbar-btn.active {
+	background-color: var(--vscode-list-activeSelectionBackground, #094771);
+	color: var(--vscode-list-activeSelectionForeground, #ffffff);
+}
+
+.toolbar-separator {
+	width: 1px;
+	height: 20px;
+	background-color: var(--vscode-widget-border, #454545);
+	margin: 0 2px;
+}
+
+/* ============================================
+   Link tooltip (@milkdown/components)
+   Preview: div.milkdown-link-preview
+   Edit:    div.link-edit
+   ============================================ */
+
+.milkdown-link-preview {
+	display: none;
+	position: absolute;
+	z-index: 1000;
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	width: fit-content;
+	background-color: var(--vscode-editorWidget-background, #252526);
+	border: 1px solid var(--vscode-widget-border, #454545);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	padding: 4px 8px;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.milkdown-link-preview[data-show="true"] {
+	display: flex;
+}
+
+.milkdown-link-preview .link-display {
+	color: var(--vscode-textLink-foreground, #3794ff);
+	text-decoration: none;
+	max-width: 300px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.milkdown-link-preview .link-display:hover {
+	text-decoration: underline;
+}
+
+.milkdown-link-preview .milkdown-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.milkdown-link-preview .milkdown-icon svg {
+	width: 14px;
+	height: 14px;
+}
+
+.milkdown-link-preview .milkdown-icon.button {
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 4px;
+	color: var(--vscode-foreground, #cccccc);
+}
+
+.milkdown-link-preview .milkdown-icon.button:hover {
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+/* Custom link edit tooltip (manual positioning, always above) */
+.milkdown-link-edit {
+	display: none;
+	position: absolute;
+	z-index: 1000;
+}
+
+.milkdown-link-edit[data-show="true"] {
+	display: block;
+}
+
+.link-edit {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	background-color: var(--vscode-editorWidget-background, #252526);
+	border: 1px solid var(--vscode-widget-border, #454545);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	padding: 4px 8px;
+	font-size: 13px;
+}
+
+.link-edit .input-area {
+	background: var(--vscode-input-background, #3c3c3c);
+	color: var(--vscode-input-foreground, #cccccc);
+	border: 1px solid var(--vscode-input-border, #3c3c3c);
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 13px;
+	min-width: 220px;
+	outline: none;
+	font-family: inherit;
+}
+
+.link-edit .input-area:focus {
+	border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.link-edit .milkdown-icon {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.link-edit .milkdown-icon.button {
+	cursor: pointer;
+	padding: 2px 8px;
+	border-radius: 4px;
+	color: var(--vscode-foreground, #cccccc);
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.link-edit .milkdown-icon.button:hover {
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
 /* Horizontal rule */
 .ProseMirror hr {
 	border: 0;
