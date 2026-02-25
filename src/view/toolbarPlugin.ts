@@ -242,11 +242,13 @@ class CustomLinkEditTooltip implements PluginView {
 			const tooltipWidth = this.#content.offsetWidth;
 			const gap = 8;
 
-			const top = rect.top - parentRect.top - tooltipHeight - gap;
+			// Position above; fall back to below if above would be off-screen
+			const topAbove = rect.top - parentRect.top - tooltipHeight - gap;
+			const topBelow = rect.bottom - parentRect.top + gap;
+			const top = topAbove >= 0 ? topAbove : topBelow;
+
 			const left =
 				rect.left - parentRect.left + rect.width / 2 - tooltipWidth / 2;
-
-			// Clamp left to stay within parent bounds
 			const clampedLeft = Math.max(
 				0,
 				Math.min(left, parentRect.width - tooltipWidth),
@@ -260,8 +262,11 @@ class CustomLinkEditTooltip implements PluginView {
 	};
 
 	#hide = () => {
+		const wasVisible = this.#content.dataset.show === 'true';
 		this.#content.dataset.show = 'false';
-		this.#view.dom.focus({ preventScroll: true });
+		if (wasVisible) {
+			this.#view.dom.focus({ preventScroll: true });
+		}
 	};
 
 	#reset = () => {
