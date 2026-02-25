@@ -23,6 +23,12 @@ import {
 } from './katexPlugin';
 import { configureSlash, slash, slashKeyboardPlugin } from './slashPlugin';
 import { configureTableBlock, tableBlock } from './tableBlockPlugin';
+import {
+	configureCustomLinkTooltip,
+	configureSelectionToolbar,
+	linkTooltipPlugin,
+	selectionToolbar,
+} from './toolbarPlugin';
 
 declare function acquireVsCodeApi(): {
 	postMessage(message: unknown): void;
@@ -124,6 +130,10 @@ async function createEditor(
 		.use(alertPlugin)
 		.use(mathViewPlugin)
 		.use(imageViewPlugin)
+		.use(selectionToolbar)
+		.config(configureSelectionToolbar)
+		.use(linkTooltipPlugin)
+		.config(configureCustomLinkTooltip)
 		.use(slash)
 		.config(configureSlash)
 		.use(slashKeyboardPlugin);
