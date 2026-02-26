@@ -46,10 +46,25 @@
         "priority": "option"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "markdownLiveEditor.outline",
+          "name": "Markdown Outline",
+          "when": "markdownLiveEditor.outlineAvailable",
+          "icon": "$(list-tree)"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "markdownLiveEditor.openEditor",
         "title": "Open with Markdown Live Editor",
+        "category": "Markdown Live Editor"
+      },
+      {
+        "command": "markdownLiveEditor.scrollToHeading",
+        "title": "Scroll to Heading",
         "category": "Markdown Live Editor"
       }
     ],
