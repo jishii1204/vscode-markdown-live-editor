@@ -2,6 +2,15 @@
 
 All notable changes to Markdown Live Editor will be documented in this file.
 
+## [0.0.6] - 2026-02-26
+
+### Added
+
+- Outline panel in Explorer sidebar — displays heading hierarchy (H1–H6) as a TreeView
+- Click-to-scroll: click any heading in the outline to smooth-scroll the editor to that position
+- Auto-update: outline refreshes on document edits and tab switches
+- Panel auto-hides when Markdown Live Editor is not active
+
 ## [0.0.5] - 2026-02-25
 
 ### Added
