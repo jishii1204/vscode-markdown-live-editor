@@ -7,8 +7,7 @@
 A WYSIWYG Markdown editor for Visual Studio Code.
 Edit your Markdown files visually — what you see is what you get.
 
-<!-- TODO: Add screenshot -->
-<!-- ![Markdown Live Editor](images/screenshot.png) -->
+![Markdown Live Editor Demo](images/demo.gif)
 
 ## Installation
 
@@ -23,12 +22,16 @@ ext install jishii1204.markdown-live-editor
 - **WYSIWYG editing** — Edit Markdown visually with [Milkdown](https://milkdown.dev/) (ProseMirror-based)
 - **Bidirectional sync** — Changes in the visual editor update the source file, and vice versa
 - **GFM support** — Tables, task lists, strikethrough, footnotes
+- **Selection toolbar** — Select text to show Bold, Italic, Strikethrough, Code, and Link buttons
+- **Link tooltip** — Hover over links to preview URL with edit/delete actions
+- **Outline panel** — Heading hierarchy in the Explorer sidebar with click-to-scroll navigation
 - **Syntax highlighting** — Code blocks with language-aware highlighting via [highlight.js](https://highlightjs.org/)
 - **Mermaid diagrams** — Live preview of `mermaid` code blocks
 - **KaTeX math** — Inline `$...$` and block `$$...$$` math rendering
 - **GitHub Alerts** — `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`
 - **Slash commands** — Type `/` to insert headings, lists, tables, code blocks, math, mermaid diagrams, and more
 - **Emoji shortcodes** — `:smile:` → 😄, `:rocket:` → 🚀
+- **Relative image paths** — Display local images referenced with relative paths
 - **Custom CSS** — Inject your own styles via settings
 - **Theme integration** — Adapts to light, dark, and high-contrast themes
 
