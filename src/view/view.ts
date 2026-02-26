@@ -9,7 +9,8 @@ import {
 } from '@milkdown/core';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
-import { Plugin } from '@milkdown/prose/state';
+import type { Node as ProseMirrorNode } from '@milkdown/prose/model';
+import { Plugin, TextSelection } from '@milkdown/prose/state';
 import { $prose } from '@milkdown/utils';
 import { alertPlugin } from './alertPlugin';
 import { codeBlockPlugin, highlightPlugin } from './codeBlockPlugin';
@@ -105,6 +106,70 @@ const syncPlugin = $prose((ctx) => {
 	});
 });
 
+// -------------------------------------------------------
+// Heading extraction — sends headings to the extension host
+// for the outline panel (TreeView).
+// -------------------------------------------------------
+
+interface HeadingData {
+	text: string;
+	level: number;
+	pos: number;
+}
+
+function extractHeadings(doc: ProseMirrorNode): HeadingData[] {
+	const headings: HeadingData[] = [];
+	doc.descendants((node, pos) => {
+		if (node.type.name === 'heading') {
+			const text = node.textContent.trim();
+			if (!text) return;
+			headings.push({
+				text,
+				level: node.attrs.level as number,
+				pos,
+			});
+		}
+	});
+	return headings;
+}
+
+let lastHeadings: HeadingData[] = [];
+
+function headingsEqual(a: HeadingData[], b: HeadingData[]): boolean {
+	if (a.length !== b.length) return false;
+	for (let i = 0; i < a.length; i++) {
+		if (
+			a[i].text !== b[i].text ||
+			a[i].level !== b[i].level ||
+			a[i].pos !== b[i].pos
+		) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function sendHeadings(doc: ProseMirrorNode): void {
+	const headings = extractHeadings(doc);
+	if (headingsEqual(headings, lastHeadings)) return;
+	lastHeadings = headings;
+	vscode.postMessage({ type: 'headings', items: headings });
+}
+
+const headingExtractPlugin = $prose((_ctx) => {
+	return new Plugin({
+		view() {
+			return {
+				update(view, prevState) {
+					if (isInitializing || isUpdatingFromExtension) return;
+					if (view.state.doc.eq(prevState.doc)) return;
+					sendHeadings(view.state.doc);
+				},
+			};
+		},
+	});
+});
+
 async function createEditor(
 	container: HTMLElement,
 	markdown: string,
@@ -125,6 +190,7 @@ async function createEditor(
 		.use(mathDisplaySchema)
 		.use(emojiPlugin)
 		.use(syncPlugin)
+		.use(headingExtractPlugin)
 		.use(codeBlockPlugin)
 		.use(highlightPlugin)
 		.use(alertPlugin)
@@ -177,10 +243,10 @@ function replaceContent(newMarkdown: string): void {
 			view.dispatch(tr);
 
 			// Update baseline to the new normalized content
-			normalizedBaseline = cleanupTableBr(
-				serializer(ctx.get(editorStateCtx).doc),
-			);
+			const updatedDoc = ctx.get(editorStateCtx).doc;
+			normalizedBaseline = cleanupTableBr(serializer(updatedDoc));
 			isUpdatingFromExtension = false;
+			sendHeadings(updatedDoc);
 		});
 	} catch {
 		isUpdatingFromExtension = false;
@@ -202,6 +268,9 @@ window.addEventListener('message', (event) => {
 			createEditor(container, message.body)
 				.then((e) => {
 					editor = e;
+					e.action((ctx) => {
+						sendHeadings(ctx.get(editorStateCtx).doc);
+					});
 				})
 				.catch((err) => {
 					showError(`Editor init failed: ${err?.stack || err}`);
@@ -210,6 +279,32 @@ window.addEventListener('message', (event) => {
 		}
 		case 'update': {
 			replaceContent(message.body);
+			break;
+		}
+		case 'scrollToHeading': {
+			if (!editor) break;
+			editor.action((ctx) => {
+				const view = ctx.get(editorViewCtx);
+				const pos = message.pos as number;
+				const { doc } = view.state;
+				if (pos < 0 || pos >= doc.content.size) return;
+				const selection = TextSelection.near(doc.resolve(pos));
+				view.dispatch(view.state.tr.setSelection(selection));
+				// Use DOM scrollIntoView to position the heading at the top
+				const dom = view.nodeDOM(pos);
+				if (dom instanceof HTMLElement) {
+					dom.scrollIntoView({ block: 'start', behavior: 'smooth' });
+				}
+				view.focus();
+			});
+			break;
+		}
+		case 'requestHeadings': {
+			if (!editor) break;
+			editor.action((ctx) => {
+				lastHeadings = [];
+				sendHeadings(ctx.get(editorStateCtx).doc);
+			});
 			break;
 		}
 	}

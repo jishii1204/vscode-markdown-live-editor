@@ -1,19 +1,47 @@
 import * as vscode from 'vscode';
+import type { HeadingItem, OutlineProvider } from './outlineProvider';
 
 export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	public static readonly viewType = 'markdownLiveEditor.editor';
 
-	constructor(private readonly context: vscode.ExtensionContext) {}
+	private activeWebviewPanel: vscode.WebviewPanel | null = null;
 
-	public static register(context: vscode.ExtensionContext): vscode.Disposable {
-		const provider = new MarkdownEditorProvider(context);
-		return vscode.window.registerCustomEditorProvider(
-			MarkdownEditorProvider.viewType,
-			provider,
-			{
-				webviewOptions: { retainContextWhenHidden: true },
-			},
+	constructor(
+		private readonly context: vscode.ExtensionContext,
+		private readonly outlineProvider: OutlineProvider,
+	) {}
+
+	public static register(
+		context: vscode.ExtensionContext,
+		outlineProvider: OutlineProvider,
+	): vscode.Disposable {
+		const provider = new MarkdownEditorProvider(context, outlineProvider);
+
+		const disposables: vscode.Disposable[] = [];
+
+		disposables.push(
+			vscode.window.registerCustomEditorProvider(
+				MarkdownEditorProvider.viewType,
+				provider,
+				{
+					webviewOptions: { retainContextWhenHidden: true },
+				},
+			),
 		);
+
+		disposables.push(
+			vscode.commands.registerCommand(
+				'markdownLiveEditor.scrollToHeading',
+				(pos: number) => {
+					provider.activeWebviewPanel?.webview.postMessage({
+						type: 'scrollToHeading',
+						pos,
+					});
+				},
+			),
+		);
+
+		return vscode.Disposable.from(...disposables);
 	}
 
 	public async resolveCustomTextEditor(
@@ -35,6 +63,14 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		};
 
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
+
+		// Track active panel for outline and scroll commands
+		this.activeWebviewPanel = webviewPanel;
+		vscode.commands.executeCommand(
+			'setContext',
+			'markdownLiveEditor.outlineAvailable',
+			true,
+		);
 
 		// Track the last content received from the webview to prevent
 		// echo: when onDidChangeTextDocument fires for our own edit,
@@ -72,6 +108,13 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 						vscode.workspace.applyEdit(edit);
 						break;
 					}
+					case 'headings': {
+						if (this.activeWebviewPanel === webviewPanel) {
+							const items = message.items as HeadingItem[];
+							this.outlineProvider.updateHeadings(items);
+						}
+						break;
+					}
 				}
 			},
 		);
@@ -95,9 +138,33 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 			},
 		);
 
+		// Track focus changes across multiple editor tabs
+		const onDidChangeViewState = webviewPanel.onDidChangeViewState((e) => {
+			if (e.webviewPanel.active) {
+				this.activeWebviewPanel = webviewPanel;
+				vscode.commands.executeCommand(
+					'setContext',
+					'markdownLiveEditor.outlineAvailable',
+					true,
+				);
+				webviewPanel.webview.postMessage({ type: 'requestHeadings' });
+			}
+		});
+
 		webviewPanel.onDidDispose(() => {
 			onDidReceiveMessage.dispose();
 			onDidChangeTextDocument.dispose();
+			onDidChangeViewState.dispose();
+
+			if (this.activeWebviewPanel === webviewPanel) {
+				this.activeWebviewPanel = null;
+				this.outlineProvider.clear();
+				vscode.commands.executeCommand(
+					'setContext',
+					'markdownLiveEditor.outlineAvailable',
+					false,
+				);
+			}
 		});
 	}
 
