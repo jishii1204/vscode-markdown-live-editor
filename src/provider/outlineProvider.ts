@@ -13,7 +13,7 @@ class HeadingTreeItem extends vscode.TreeItem {
 		public readonly children: HeadingTreeItem[],
 	) {
 		super(
-			heading.text || '(empty)',
+			heading.text,
 			children.length > 0
 				? vscode.TreeItemCollapsibleState.Expanded
 				: vscode.TreeItemCollapsibleState.None,
