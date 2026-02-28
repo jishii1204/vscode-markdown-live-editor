@@ -2,6 +2,15 @@
 
 All notable changes to Markdown Live Editor will be documented in this file.
 
+## [0.1.0] - 2026-02-28
+
+### Added
+
+- Word and character count in the status bar
+- Selection count display when text is selected (e.g. Words: 10/123 | Chars: 30/456)
+- Auto-update on document edits and selection changes
+- Status bar auto-hides when editor is not active
+
 ## [0.0.6] - 2026-02-26
 
 ### Added
