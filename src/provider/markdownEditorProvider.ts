@@ -9,13 +9,19 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly outlineProvider: OutlineProvider,
+		private readonly wordCountStatusBar: vscode.StatusBarItem,
 	) {}
 
 	public static register(
 		context: vscode.ExtensionContext,
 		outlineProvider: OutlineProvider,
+		wordCountStatusBar: vscode.StatusBarItem,
 	): vscode.Disposable {
-		const provider = new MarkdownEditorProvider(context, outlineProvider);
+		const provider = new MarkdownEditorProvider(
+			context,
+			outlineProvider,
+			wordCountStatusBar,
+		);
 
 		const disposables: vscode.Disposable[] = [];
 
@@ -115,6 +121,21 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 						}
 						break;
 					}
+					case 'wordCount': {
+						if (this.activeWebviewPanel === webviewPanel) {
+							const w = message.words as number;
+							const c = message.characters as number;
+							const sel = message.selection as {
+								words: number;
+								characters: number;
+							} | null;
+							this.wordCountStatusBar.text = sel
+								? `Words: ${sel.words}/${w} | Chars: ${sel.characters}/${c}`
+								: `Words: ${w} | Chars: ${c}`;
+							this.wordCountStatusBar.show();
+						}
+						break;
+					}
 				}
 			},
 		);
@@ -148,6 +169,9 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 					true,
 				);
 				webviewPanel.webview.postMessage({ type: 'requestHeadings' });
+				webviewPanel.webview.postMessage({ type: 'requestWordCount' });
+			} else if (this.activeWebviewPanel === webviewPanel) {
+				this.wordCountStatusBar.hide();
 			}
 		});
 
@@ -159,6 +183,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 			if (this.activeWebviewPanel === webviewPanel) {
 				this.activeWebviewPanel = null;
 				this.outlineProvider.clear();
+				this.wordCountStatusBar.hide();
 				vscode.commands.executeCommand(
 					'setContext',
 					'markdownLiveEditor.outlineAvailable',
