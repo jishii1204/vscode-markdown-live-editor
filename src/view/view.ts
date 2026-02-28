@@ -170,6 +170,85 @@ const headingExtractPlugin = $prose((_ctx) => {
 	});
 });
 
+// -------------------------------------------------------
+// Word count — sends word/character counts to the extension
+// host for the status bar display.
+// -------------------------------------------------------
+
+interface WordCountData {
+	words: number;
+	characters: number;
+}
+
+function countText(text: string): WordCountData {
+	const characters = text.length;
+	const words = text.split(/\s+/).filter((w) => w.length > 0).length;
+	return { words, characters };
+}
+
+function calculateWordCount(doc: ProseMirrorNode): WordCountData {
+	let text = '';
+	doc.descendants((node) => {
+		if (node.isText) {
+			text += node.text;
+		} else if (node.isBlock && text.length > 0) {
+			text += '\n';
+		}
+	});
+	return countText(text);
+}
+
+let lastWordCount: WordCountData = { words: 0, characters: 0 };
+let lastSelectionCount: WordCountData | null = null;
+
+function sendWordCount(
+	doc: ProseMirrorNode,
+	selection?: { from: number; to: number },
+): void {
+	const total = calculateWordCount(doc);
+	let sel: WordCountData | null = null;
+
+	if (selection && selection.from !== selection.to) {
+		const slice = doc.textBetween(selection.from, selection.to, '\n');
+		sel = countText(slice);
+	}
+
+	if (
+		total.words === lastWordCount.words &&
+		total.characters === lastWordCount.characters &&
+		sel?.words === lastSelectionCount?.words &&
+		sel?.characters === lastSelectionCount?.characters
+	) {
+		return;
+	}
+
+	lastWordCount = total;
+	lastSelectionCount = sel;
+	vscode.postMessage({
+		type: 'wordCount',
+		words: total.words,
+		characters: total.characters,
+		selection: sel,
+	});
+}
+
+const wordCountPlugin = $prose((_ctx) => {
+	return new Plugin({
+		view() {
+			return {
+				update(view, prevState) {
+					if (isInitializing || isUpdatingFromExtension) return;
+					const docChanged = !view.state.doc.eq(prevState.doc);
+					const selChanged = !view.state.selection.eq(prevState.selection);
+					if (!docChanged && !selChanged) return;
+					const { from, to } = view.state.selection;
+					sendWordCount(view.state.doc, { from, to });
+				},
+			};
+		},
+	});
+});
+
 async function createEditor(
 	container: HTMLElement,
 	markdown: string,
@@ -191,6 +270,7 @@ async function createEditor(
 		.use(emojiPlugin)
 		.use(syncPlugin)
 		.use(headingExtractPlugin)
+		.use(wordCountPlugin)
 		.use(codeBlockPlugin)
 		.use(highlightPlugin)
 		.use(alertPlugin)
@@ -247,6 +327,7 @@ function replaceContent(newMarkdown: string): void {
 			normalizedBaseline = cleanupTableBr(serializer(updatedDoc));
 			isUpdatingFromExtension = false;
 			sendHeadings(updatedDoc);
+			sendWordCount(updatedDoc);
 		});
 	} catch {
 		isUpdatingFromExtension = false;
@@ -269,7 +350,9 @@ window.addEventListener('message', (event) => {
 				.then((e) => {
 					editor = e;
 					e.action((ctx) => {
-						sendHeadings(ctx.get(editorStateCtx).doc);
+						const doc = ctx.get(editorStateCtx).doc;
+						sendHeadings(doc);
+						sendWordCount(doc);
 					});
 				})
 				.catch((err) => {
@@ -304,6 +387,17 @@ window.addEventListener('message', (event) => {
 			editor.action((ctx) => {
 				lastHeadings = [];
 				sendHeadings(ctx.get(editorStateCtx).doc);
+			});
+			break;
+		}
+		case 'requestWordCount': {
+			if (!editor) break;
+			editor.action((ctx) => {
+				lastWordCount = { words: 0, characters: 0 };
+				lastSelectionCount = null;
+				const state = ctx.get(editorStateCtx);
+				const { from, to } = state.selection;
+				sendWordCount(state.doc, { from, to });
 			});
 			break;
 		}

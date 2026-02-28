@@ -10,9 +10,20 @@ export function activate(context: vscode.ExtensionContext) {
 		showCollapseAll: true,
 	});
 
+	const wordCountStatusBar = vscode.window.createStatusBarItem(
+		vscode.StatusBarAlignment.Right,
+		100,
+	);
+	wordCountStatusBar.tooltip = 'Word and character count';
+
 	context.subscriptions.push(treeView);
+	context.subscriptions.push(wordCountStatusBar);
 	context.subscriptions.push(
-		MarkdownEditorProvider.register(context, outlineProvider),
+		MarkdownEditorProvider.register(
+			context,
+			outlineProvider,
+			wordCountStatusBar,
+		),
 	);
 
 	context.subscriptions.push(
