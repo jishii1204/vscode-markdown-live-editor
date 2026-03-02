@@ -2,6 +2,15 @@
 
 All notable changes to Markdown Live Editor will be documented in this file.
 
+## [0.2.0] - 2026-03-02
+
+### Added
+
+- YAML Frontmatter support — `---` blocks are recognized and displayed as a collapsible block
+- Click-to-expand: click the "Frontmatter" header to reveal YAML content
+- Editable: edit frontmatter directly in the WYSIWYG view via textarea
+- Round-trip safe: frontmatter content is preserved exactly during serialization
+
 ## [0.1.0] - 2026-02-28
 
 ### Added
