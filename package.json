@@ -138,6 +138,7 @@
     "katex": "^0.16.33",
     "mermaid": "^11.12.3",
     "remark-emoji": "^5.0.2",
+    "remark-frontmatter": "^5.0.0",
     "remark-math": "^6.0.0"
   }
 }
