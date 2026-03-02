@@ -15,6 +15,11 @@ import { $prose } from '@milkdown/utils';
 import { alertPlugin } from './alertPlugin';
 import { codeBlockPlugin, highlightPlugin } from './codeBlockPlugin';
 import { emojiPlugin } from './emojiPlugin';
+import {
+	frontmatterSchema,
+	frontmatterViewPlugin,
+	remarkFrontmatterPlugin,
+} from './frontmatterPlugin';
 import { imageViewPlugin, setDocumentDirUri } from './imagePlugin';
 import {
 	mathDisplaySchema,
@@ -264,7 +269,9 @@ async function createEditor(
 		.use(gfm)
 		.use(tableBlock)
 		.config(configureTableBlock)
+		.use(remarkFrontmatterPlugin)
 		.use(remarkMathPlugin)
+		.use(frontmatterSchema)
 		.use(mathInlineSchema)
 		.use(mathDisplaySchema)
 		.use(emojiPlugin)
@@ -274,6 +281,7 @@ async function createEditor(
 		.use(codeBlockPlugin)
 		.use(highlightPlugin)
 		.use(alertPlugin)
+		.use(frontmatterViewPlugin)
 		.use(mathViewPlugin)
 		.use(imageViewPlugin)
 		.use(selectionToolbar)

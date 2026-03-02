@@ -947,3 +947,69 @@ body {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+/* ============================================
+   YAML Frontmatter
+   Collapsible editable block at document top
+   ============================================ */
+
+.frontmatter-block {
+	margin-bottom: 16px;
+	border: 1px solid var(--vscode-widget-border, #454545);
+	border-radius: 4px;
+	background-color: var(--vscode-textCodeBlock-background);
+	overflow: hidden;
+}
+
+.frontmatter-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+	cursor: pointer;
+	user-select: none;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--vscode-descriptionForeground, #999);
+}
+
+.frontmatter-header:hover {
+	background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.frontmatter-toggle {
+	font-size: 10px;
+	line-height: 1;
+	flex-shrink: 0;
+	width: 12px;
+	text-align: center;
+}
+
+textarea.frontmatter-content {
+	display: none;
+	width: 100%;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 12px 16px;
+	font-family: var(
+		--vscode-editor-font-family,
+		"SF Mono",
+		Monaco,
+		Menlo,
+		Consolas,
+		monospace
+	);
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--vscode-editor-foreground);
+	background-color: transparent;
+	border: none;
+	border-top: 1px solid var(--vscode-widget-border, #454545);
+	outline: none;
+	resize: none;
+	overflow: hidden;
+}
+
+textarea.frontmatter-content--visible {
+	display: block;
+}
