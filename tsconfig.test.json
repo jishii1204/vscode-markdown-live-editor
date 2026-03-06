@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM"],
+		"strict": true,
+		"types": ["node"],
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"rootDir": ".",
+		"outDir": ".test-dist"
+	},
+	"include": [
+		"src/view/editorTestUtils.ts",
+		"test/unit/**/*.ts",
+		"test/smoke/**/*.ts"
+	]
+}
