@@ -14,6 +14,13 @@ import { Plugin, TextSelection } from '@milkdown/prose/state';
 import { $prose } from '@milkdown/utils';
 import { alertPlugin } from './alertPlugin';
 import { codeBlockPlugin, highlightPlugin } from './codeBlockPlugin';
+import {
+	cleanupTableBr,
+	countText,
+	type HeadingData,
+	headingsEqual,
+	type WordCountData,
+} from './editorTestUtils';
 import { emojiPlugin } from './emojiPlugin';
 import {
 	frontmatterSchema,
@@ -60,17 +67,6 @@ window.addEventListener('unhandledrejection', (e) => {
 	showError(`Unhandled rejection: ${e.reason?.stack || e.reason}`);
 });
 
-// Strip spurious <br /> that Milkdown's remarkPreserveEmptyLinePlugin
-// inserts into empty table cells during serialization.
-function cleanupTableBr(md: string): string {
-	return md
-		.split('\n')
-		.map((line) =>
-			line.startsWith('|') ? line.replaceAll('<br />', '') : line,
-		)
-		.join('\n');
-}
-
 let editor: Editor | null = null;
 let isUpdatingFromExtension = false;
 
@@ -116,12 +112,6 @@ const syncPlugin = $prose((ctx) => {
 // for the outline panel (TreeView).
 // -------------------------------------------------------
 
-interface HeadingData {
-	text: string;
-	level: number;
-	pos: number;
-}
-
 function extractHeadings(doc: ProseMirrorNode): HeadingData[] {
 	const headings: HeadingData[] = [];
 	doc.descendants((node, pos) => {
@@ -139,20 +129,6 @@ function extractHeadings(doc: ProseMirrorNode): HeadingData[] {
 }
 
 let lastHeadings: HeadingData[] = [];
-
-function headingsEqual(a: HeadingData[], b: HeadingData[]): boolean {
-	if (a.length !== b.length) return false;
-	for (let i = 0; i < a.length; i++) {
-		if (
-			a[i].text !== b[i].text ||
-			a[i].level !== b[i].level ||
-			a[i].pos !== b[i].pos
-		) {
-			return false;
-		}
-	}
-	return true;
-}
 
 function sendHeadings(doc: ProseMirrorNode): void {
 	const headings = extractHeadings(doc);
@@ -179,17 +155,6 @@ const headingExtractPlugin = $prose((_ctx) => {
 // Word count — sends word/character counts to the extension
 // host for the status bar display.
 // -------------------------------------------------------
-
-interface WordCountData {
-	words: number;
-	characters: number;
-}
-
-function countText(text: string): WordCountData {
-	const characters = text.length;
-	const words = text.split(/\s+/).filter((w) => w.length > 0).length;
-	return { words, characters };
-}
 
 function calculateWordCount(doc: ProseMirrorNode): WordCountData {
 	let text = '';

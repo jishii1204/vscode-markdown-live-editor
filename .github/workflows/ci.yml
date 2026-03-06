@@ -50,5 +50,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Smoke tests
+        run: npm run test:smoke
+
       - name: Build
         run: node esbuild.js
