@@ -298,6 +298,34 @@ body {
 	display: flex;
 }
 
+.search-panel[data-export="true"] .export-row {
+	display: flex;
+}
+
+.export-row {
+	display: none;
+	align-items: center;
+	gap: 8px;
+	padding-top: 6px;
+	border-top: 1px solid var(--vscode-widget-border, #454545);
+	margin-top: 4px;
+}
+
+.export-label {
+	font-size: 12px;
+	color: var(--vscode-descriptionForeground, #999999);
+}
+
+.search-toggle-export {
+	min-width: 52px;
+	font-weight: 600;
+}
+
+.export-actions {
+	display: flex;
+	gap: 6px;
+}
+
 .search-input {
 	width: 190px;
 	height: 24px;

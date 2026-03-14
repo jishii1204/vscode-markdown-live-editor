@@ -49,18 +49,41 @@ export interface WordCountMessage {
 	selection: WordCountValue | null;
 }
 
+export type ExportMode = 'clipboard' | 'file';
+
+export interface RequestExportHtmlMessage {
+	type: 'requestExportHtml';
+	mode: ExportMode;
+	style: string;
+	customStyle: string;
+}
+
+export interface ExportHtmlMessage {
+	type: 'exportHtml';
+	html: string;
+	mode: ExportMode;
+}
+
+export interface RequestExportMessage {
+	type: 'requestExport';
+	mode: ExportMode;
+}
+
 export type HostToEditorMessage =
 	| InitMessage
 	| RequestHeadingsMessage
 	| RequestWordCountMessage
 	| ScrollToHeadingMessage
-	| UpdateMessage;
+	| UpdateMessage
+	| RequestExportHtmlMessage;
 
 export type EditorToHostMessage =
 	| HeadingsMessage
 	| ReadyMessage
 	| UpdateMessage
-	| WordCountMessage;
+	| WordCountMessage
+	| ExportHtmlMessage
+	| RequestExportMessage;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
@@ -99,6 +122,13 @@ export function isHostToEditorMessage(
 		case 'requestHeadings':
 		case 'requestWordCount':
 			return true;
+		case 'requestExportHtml':
+			return (
+				typeof value.mode === 'string' &&
+				(value.mode === 'clipboard' || value.mode === 'file') &&
+				typeof value.style === 'string' &&
+				typeof value.customStyle === 'string'
+			);
 		default:
 			return false;
 	}
@@ -120,6 +150,17 @@ export function isEditorToHostMessage(
 				typeof value.words === 'number' &&
 				typeof value.characters === 'number' &&
 				(value.selection === null || isWordCountValue(value.selection))
+			);
+		case 'exportHtml':
+			return (
+				typeof value.html === 'string' &&
+				typeof value.mode === 'string' &&
+				(value.mode === 'clipboard' || value.mode === 'file')
+			);
+		case 'requestExport':
+			return (
+				typeof value.mode === 'string' &&
+				(value.mode === 'clipboard' || value.mode === 'file')
 			);
 		default:
 			return false;
