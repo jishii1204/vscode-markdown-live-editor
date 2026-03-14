@@ -14,7 +14,10 @@ import { Plugin, TextSelection } from '@milkdown/prose/state';
 import { $prose } from '@milkdown/utils';
 import {
 	type EditorToHostMessage,
+	type ExportMode,
 	type HostToEditorMessage,
+	type RequestExportHtmlMessage,
+	type RequestExportMessage,
 	isHostToEditorMessage,
 } from '../protocol/messages';
 import { alertPlugin } from './alertPlugin';
@@ -247,6 +250,7 @@ function setupSearchUi(instance: Editor): void {
 		panel.className = 'search-panel';
 		panel.setAttribute('data-show', 'false');
 		panel.setAttribute('data-replace', 'false');
+		panel.setAttribute('data-export', 'false');
 		panel.innerHTML = `
 			<div class="search-row">
 				<input class="search-input" type="text" placeholder="Find" />
@@ -254,12 +258,38 @@ function setupSearchUi(instance: Editor): void {
 				<button class="search-btn search-prev" title="Previous">↑</button>
 				<button class="search-btn search-next" title="Next">↓</button>
 				<button class="search-btn search-toggle-replace" title="Toggle Replace">↧</button>
+				<button
+					class="search-btn search-toggle-export"
+					title="Export current view"
+					aria-label="Export current view"
+				>
+					⤴
+				</button>
 				<button class="search-btn search-close" title="Close">✕</button>
 			</div>
 			<div class="replace-row">
 				<input class="search-input replace-input" type="text" placeholder="Replace" />
 				<button class="search-btn search-replace" title="Replace">Replace</button>
 				<button class="search-btn search-replace-all" title="Replace All">All</button>
+			</div>
+			<div class="export-row">
+				<span class="export-label">Export styled HTML</span>
+				<div class="export-actions">
+					<button
+						class="search-btn search-export-clipboard"
+						title="Copy HTML to clipboard"
+						aria-label="Copy HTML to clipboard"
+					>
+						Copy
+					</button>
+					<button
+						class="search-btn search-export-file"
+						title="Export HTML file"
+						aria-label="Export HTML file"
+					>
+						Export
+					</button>
+				</div>
 			</div>
 		`;
 		document.body.appendChild(panel);
@@ -281,6 +311,15 @@ function setupSearchUi(instance: Editor): void {
 			'.search-replace-all',
 		) as HTMLButtonElement;
 		const closeBtn = panel.querySelector('.search-close') as HTMLButtonElement;
+		const exportToggleBtn = panel.querySelector(
+			'.search-toggle-export',
+		) as HTMLButtonElement;
+		const exportClipboardBtn = panel.querySelector(
+			'.search-export-clipboard',
+		) as HTMLButtonElement;
+		const exportFileBtn = panel.querySelector(
+			'.search-export-file',
+		) as HTMLButtonElement;
 
 		function updateCount(): void {
 			const state = getSearchState(view);
@@ -328,6 +367,7 @@ function setupSearchUi(instance: Editor): void {
 		}
 
 		function openSearchBar(): void {
+			closeExportBar();
 			panel.setAttribute('data-show', 'true');
 			const selected = view.state.doc.textBetween(
 				view.state.selection.from,
@@ -356,6 +396,7 @@ function setupSearchUi(instance: Editor): void {
 		function closeSearchBar(): void {
 			panel.setAttribute('data-show', 'false');
 			panel.setAttribute('data-replace', 'false');
+			closeExportBar();
 			input.value = '';
 			replaceInput.value = '';
 			clearSearchAction(view);
@@ -372,6 +413,27 @@ function setupSearchUi(instance: Editor): void {
 			}
 			replaceInput.focus();
 			replaceInput.select();
+		}
+
+		function closeExportBar(): void {
+			panel.setAttribute('data-export', 'false');
+		}
+
+		function toggleExportBar(): void {
+			const showExport = panel.getAttribute('data-export') === 'true';
+			panel.setAttribute('data-export', showExport ? 'false' : 'true');
+			if (!showExport) {
+				exportClipboardBtn.focus();
+			}
+		}
+
+		function sendExportRequest(mode: ExportMode): void {
+			const message: RequestExportMessage = {
+				type: 'requestExport',
+				mode,
+			};
+			vscode.postMessage(message);
+			closeExportBar();
 		}
 
 		function onInputChange(): void {
@@ -461,6 +523,14 @@ function setupSearchUi(instance: Editor): void {
 			}
 			if (
 				event.key === 'Escape' &&
+				panel.getAttribute('data-export') === 'true'
+			) {
+				event.preventDefault();
+				closeExportBar();
+				return;
+			}
+			if (
+				event.key === 'Escape' &&
 				panel.getAttribute('data-show') === 'true'
 			) {
 				event.preventDefault();
@@ -500,6 +570,13 @@ function setupSearchUi(instance: Editor): void {
 				closeSearchBar();
 			}
 		});
+		exportToggleBtn.addEventListener('click', toggleExportBar);
+		exportClipboardBtn.addEventListener('click', () =>
+			sendExportRequest('clipboard'),
+		);
+		exportFileBtn.addEventListener('click', () =>
+			sendExportRequest('file'),
+		);
 		window.addEventListener('keydown', onKeyDown);
 
 		updateCount();
@@ -608,6 +685,44 @@ function replaceContent(newMarkdown: string): void {
 	}
 }
 
+function buildExportHtml(style: string, customStyle: string): string {
+	const exportDoc = document.implementation.createHTMLDocument(
+		'Markdown Live Editor Export',
+	);
+	const metaCharset = exportDoc.createElement('meta');
+	metaCharset.setAttribute('charset', 'UTF-8');
+	exportDoc.head.appendChild(metaCharset);
+
+	const metaViewport = exportDoc.createElement('meta');
+	metaViewport.name = 'viewport';
+	metaViewport.content = 'width=device-width, initial-scale=1.0';
+	exportDoc.head.appendChild(metaViewport);
+
+	const titleElement = exportDoc.createElement('title');
+	titleElement.textContent = 'Markdown Live Editor Export';
+	exportDoc.head.appendChild(titleElement);
+
+	if (style) {
+		const styleElement = exportDoc.createElement('style');
+		styleElement.textContent = style;
+		exportDoc.head.appendChild(styleElement);
+	}
+
+	if (customStyle) {
+		const customStyleElement = exportDoc.createElement('style');
+		customStyleElement.textContent = customStyle;
+		exportDoc.head.appendChild(customStyleElement);
+	}
+
+	const editorElement = document.getElementById('editor');
+	const wrapper = exportDoc.createElement('div');
+	wrapper.className = 'markdown-live-export';
+	wrapper.innerHTML = editorElement?.innerHTML ?? '';
+	exportDoc.body.appendChild(wrapper);
+
+	return '<!DOCTYPE html>\n' + exportDoc.documentElement.outerHTML;
+}
+
 // Handle messages from the extension host
 window.addEventListener('message', (event) => {
 	const rawMessage = event.data;
@@ -676,6 +791,16 @@ window.addEventListener('message', (event) => {
 				const state = ctx.get(editorStateCtx);
 				const { from, to } = state.selection;
 				sendWordCount(state.doc, { from, to });
+			});
+			break;
+		}
+		case 'requestExportHtml': {
+			const request = message as RequestExportHtmlMessage;
+		const html = buildExportHtml(request.style, request.customStyle);
+			vscode.postMessage({
+				type: 'exportHtml',
+				html,
+				mode: request.mode,
 			});
 			break;
 		}

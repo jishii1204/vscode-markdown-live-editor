@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import {
+	type ExportHtmlMessage,
+	type ExportMode,
 	type HostToEditorMessage,
+	type RequestExportMessage,
 	isEditorToHostMessage,
 } from '../protocol/messages';
 import type { OutlineProvider } from './outlineProvider';
@@ -15,12 +18,20 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	public static readonly viewType = 'markdownLiveEditor.editor';
 
 	private activeWebviewPanel: vscode.WebviewPanel | null = null;
+	private readonly styleUri: vscode.Uri;
+	private styleCache: string | null = null;
 
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly outlineProvider: OutlineProvider,
 		private readonly wordCountStatusBar: vscode.StatusBarItem,
-	) {}
+	) {
+		this.styleUri = vscode.Uri.joinPath(
+			context.extensionUri,
+			'media',
+			'style.css',
+		);
+	}
 
 	public static register(
 		context: vscode.ExtensionContext,
@@ -42,6 +53,13 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 				{
 					webviewOptions: { retainContextWhenHidden: true },
 				},
+			),
+		);
+
+		disposables.push(
+			vscode.commands.registerCommand(
+				'markdownLiveEditor.exportHtml',
+				() => provider.showExportOptions(),
 			),
 		);
 
@@ -95,7 +113,7 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
 		// Handle all messages from the webview in a single listener
 		const onDidReceiveMessage = webviewPanel.webview.onDidReceiveMessage(
-			(message: unknown) => {
+			async (message: unknown) => {
 				if (!isEditorToHostMessage(message)) {
 					return;
 				}
@@ -142,6 +160,23 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 								? `Words: ${sel.words}/${w} | Chars: ${sel.characters}/${c}`
 								: `Words: ${w} | Chars: ${c}`;
 							this.wordCountStatusBar.show();
+						}
+						break;
+					}
+					case 'requestExport': {
+						const request = message as RequestExportMessage;
+						const style = await this.getStyleSheet();
+						const customStyle = this.getCustomStyle();
+						this.postExportRequest(
+							request.mode,
+							style,
+							customStyle,
+						);
+						break;
+					}
+					case 'exportHtml': {
+						if (this.activeWebviewPanel === webviewPanel) {
+							void this.handleExportHtml(message);
 						}
 						break;
 					}
@@ -210,6 +245,89 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 		});
 	}
 
+
+
+	private async getStyleSheet(): Promise<string> {
+		if (this.styleCache) {
+			return this.styleCache;
+		}
+		const bytes = await vscode.workspace.fs.readFile(this.styleUri);
+		this.styleCache = Buffer.from(bytes).toString('utf8');
+		return this.styleCache;
+	}
+
+	private getCustomStyle(): string {
+		const config = vscode.workspace.getConfiguration('markdownLiveEditor');
+		return config.get<string>('customCss', '') ?? '';
+	}
+
+	public async showExportOptions(): Promise<void> {
+		if (!this.activeWebviewPanel) {
+			vscode.window.showInformationMessage(
+				'Open a Markdown Live Editor panel before exporting.',
+			);
+			return;
+		}
+		type ExportChoice = {
+			label: string;
+			mode: ExportMode;
+		};
+		const choices: ExportChoice[] = [
+			{
+				label: 'Copy HTML to clipboard',
+				mode: 'clipboard',
+			},
+			{
+				label: 'Export HTML file',
+				mode: 'file',
+			},
+		];
+		const selection = await vscode.window.showQuickPick(choices, {
+			placeHolder: 'Export the current document as HTML',
+		});
+		if (!selection) {
+			return;
+		}
+		const [style, customStyle] = await Promise.all([
+			this.getStyleSheet(),
+			this.getCustomStyle(),
+		]);
+		this.postExportRequest(
+			selection.mode,
+			style,
+			customStyle,
+		);
+	}
+
+	private postExportRequest(
+		mode: ExportMode,
+		style: string,
+		customStyle: string,
+	): void {
+		this.activeWebviewPanel?.webview.postMessage({
+			type: 'requestExportHtml',
+			mode,
+			style,
+			customStyle,
+		});
+	}
+
+	private async handleExportHtml(message: ExportHtmlMessage): Promise<void> {
+		if (message.mode === 'clipboard') {
+			await vscode.env.clipboard.writeText(message.html);
+			vscode.window.showInformationMessage('Copied HTML to clipboard');
+			return;
+		}
+		const target = await vscode.window.showSaveDialog({
+			filters: { HTML: ['html'] },
+			title: 'Export Markdown Live Editor as HTML',
+		});
+		if (!target) {
+			return;
+		}
+		await vscode.workspace.fs.writeFile(target, Buffer.from(message.html, 'utf8'));
+		vscode.window.showInformationMessage(`Exported HTML to ${target.fsPath}`);
+	}
 	private getHtmlForWebview(webview: vscode.Webview): string {
 		const scriptUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(this.context.extensionUri, 'media', 'view.js'),

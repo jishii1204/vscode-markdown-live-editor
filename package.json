@@ -63,6 +63,11 @@
         "category": "Markdown Live Editor"
       },
       {
+        "command": "markdownLiveEditor.exportHtml",
+        "title": "Markdown Live Editor: Export HTML",
+        "category": "Markdown Live Editor"
+      },
+      {
         "command": "markdownLiveEditor.scrollToHeading",
         "title": "Scroll to Heading",
         "category": "Markdown Live Editor"
