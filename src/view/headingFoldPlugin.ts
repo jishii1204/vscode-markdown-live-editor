@@ -135,6 +135,24 @@ function createFoldDecorations(
 	return DecorationSet.create(doc, decorations);
 }
 
+function getHeadingPosFromTarget(target: EventTarget | null): number | null {
+	if (!(target instanceof HTMLElement)) return null;
+	const toggle = target.closest<HTMLElement>('.heading-fold-toggle');
+	if (!toggle) return null;
+	const pos = Number(toggle.dataset.headingPos);
+	return Number.isNaN(pos) ? null : pos;
+}
+
+function dispatchToggle(view: EditorView, pos: number): void {
+	view.dispatch(
+		view.state.tr.setMeta(headingFoldPluginKey, {
+			type: 'toggle',
+			pos,
+		} satisfies FoldAction),
+	);
+	view.focus();
+}
+
 export const headingFoldPlugin = $prose((_ctx: Ctx) => {
 	return new Plugin<FoldState>({
 		key: headingFoldPluginKey,
@@ -172,20 +190,20 @@ export const headingFoldPlugin = $prose((_ctx: Ctx) => {
 			},
 			handleDOMEvents: {
 				mousedown(view: EditorView, event: MouseEvent) {
-					const target = event.target;
-					if (!(target instanceof HTMLElement)) return false;
-					if (!target.classList.contains('heading-fold-toggle')) return false;
-					const pos = Number(target.dataset.headingPos);
-					if (Number.isNaN(pos)) return false;
+					const pos = getHeadingPosFromTarget(event.target);
+					if (pos === null) return false;
 
 					event.preventDefault();
-					view.dispatch(
-						view.state.tr.setMeta(headingFoldPluginKey, {
-							type: 'toggle',
-							pos,
-						} satisfies FoldAction),
-					);
-					view.focus();
+					dispatchToggle(view, pos);
+					return true;
+				},
+				keydown(view: EditorView, event: KeyboardEvent) {
+					if (event.key !== 'Enter' && event.key !== ' ') return false;
+					const pos = getHeadingPosFromTarget(event.target);
+					if (pos === null) return false;
+
+					event.preventDefault();
+					dispatchToggle(view, pos);
 					return true;
 				},
 			},
